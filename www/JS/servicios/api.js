@@ -25,7 +25,6 @@ const loginData ={
 }
 
 
-
 function RegisterUser({user,password,country,calories}){
   
   fetch(`${baseURL}usuarios.php`,{
@@ -80,4 +79,22 @@ function LoginUser({username,password}){
 
 function LogOut(){
   localStorage.clear();
+}
+
+function getCountries(){
+  fetch(`${baseURL}/paises.php`)
+  .then(response => {
+    if(!response.ok){
+      return Promise.reject({
+        codigo: response.status,
+        message: "No se pudo recuperar la informacion de paises",
+      })
+    }
+    
+    return response.json();
+  })
+  .then(data => {
+    console.log(data)
+  })
+  .catch(err=> {throw new Error(err)})
 }
