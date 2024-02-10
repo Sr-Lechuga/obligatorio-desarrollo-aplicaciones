@@ -77,3 +77,7 @@ function LoginUser({username,password}){
     console.log(data);
   }).catch(err=> {throw new Error(err)})
 }
+
+function LogOut(){
+  localStorage.clear();
+}
