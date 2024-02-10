@@ -14,7 +14,7 @@ const baseURL = "https://calcount.develotion.com/";
 const loggedUserJSON = JSON.parse(localStorage.getItem("loggedUser"));
 
 const registerData = {
-  user: "jonattanlimo@gmail.com",
+  user: "jonattanlimu@gmail.com",
   password: "Contrasenia123.",
   country: 235,
   calories: 3000
@@ -39,7 +39,7 @@ const deleteRegisterMealData ={
   registerId: 803
 }
 
-function RegisterUser({user,password,country,calories}){
+function RegisterUserAPI({user,password,country,calories}){
   
   fetch(`${baseURL}usuarios.php`,{
     method:"POST",
@@ -64,38 +64,38 @@ function RegisterUser({user,password,country,calories}){
       return response.json();
     }
   })
-  .then(data => {
-    console.log(data);
-    localStorage.setItem("loggedUser",JSON.stringify(data));
-    return data;
-  }).catch(err => {throw new Error(err)})
+  // .then(data => {
+  //   console.log(data);
+  //   localStorage.setItem("loggedUser",JSON.stringify(data));
+  //   return data;
+  // }).catch(err => {throw new Error(err)})
 
 }
-
-
-function LoginUser({username,password}){
-  fetch(`${baseURL}login.php`,{
-    method:"POST",
-    headers:{
-      "Content-Type":"application/json"
+// Función para manejar la autenticación del usuario
+async function loginUserAPI({ username, password }) {
+  return fetch(`${baseURL}login.php`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
     },
-    body:JSON.stringify({usuario:username,password:password})
-  }).then(res=>{
-    if(!res.ok){
-      return Promise.reject("credenciales incorrectas")
-    }
-    return res.json()
-  }).then(data=>{
-    localStorage.setItem("loggedUser",JSON.stringify(data))
-    console.log(data);
-  }).catch(err=> {throw new Error(err)})
+    body: JSON.stringify({ usuario: username, password: password })
+  })
+    .then(res => {
+      if (!res.ok) {
+        return Promise.reject("Credenciales incorrectas");
+      }
+      return res.json();
+    })
+    .catch(err => {
+      throw new Error(err);
+    });
 }
 
-function LogOut(){
+function LogOutAPI(){
   localStorage.clear();
 }
 
-function getCountries(){
+function getCountriesAPI(){
   fetch(`${baseURL}/paises.php`)
   .then(response => {
     if(!response.ok){
@@ -113,7 +113,7 @@ function getCountries(){
   .catch(err=> {throw new Error(err)})
 }
 
-function getCountriesPerUsers({apiKey,id}){
+function getCountriesPerUsersAPI({apiKey,id}){
   fetch(`${baseURL}/usuariosPorPais.php`,{
     method:"GET",
     headers:{
@@ -139,7 +139,7 @@ function getCountriesPerUsers({apiKey,id}){
 }
 
 // getMealsRegisters(loggedUserJSON);
-function getMealsRegisters({apiKey,id}){
+function getMealsRegistersAPI({apiKey,id}){
   fetch(`${baseURL}/registros.php?idUsuario=${id}`,{
     method:"GET",
     headers:{
@@ -164,7 +164,7 @@ function getMealsRegisters({apiKey,id}){
   .catch(err=> {throw new Error(err)})
 }
 
-function setMealRegister({apiKey,id, idAlimento, cantidad,fecha}){
+function setMealRegisterAPI({apiKey,id, idAlimento, cantidad,fecha}){
   fetch(`${baseURL}/registros.php`,{
     method:"POST",
     headers:{
@@ -196,7 +196,7 @@ function setMealRegister({apiKey,id, idAlimento, cantidad,fecha}){
   .catch(err=> {throw new Error(err)})
 }
 
-function deleteMealRegister({apiKey,id,registerId}){
+function deleteMealRegisterAPI({apiKey,id,registerId}){
   fetch(`${baseURL}/registros.php?idRegistro=${registerId}`,{
     method:"DELETE",
     headers:{
@@ -221,7 +221,7 @@ function deleteMealRegister({apiKey,id,registerId}){
   .catch(err=> {throw new Error(err)})
 }
 
-function getFood({apiKey,id}){
+function getFoodAPI({apiKey,id}){
   fetch(`${baseURL}alimentos.php`,{
     method:"GET",
     headers:{
