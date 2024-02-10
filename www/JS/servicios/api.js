@@ -25,6 +25,13 @@ const loginData ={
   password:"Contrasenia123."
 }
 
+const registerMealData ={
+  apiKey:loggedUserJSON.apiKey,
+  id: loggedUserJSON.id,
+  idAlimento:8,
+  cantidad:450,
+  fecha:"2024-02-09"
+}
 
 function RegisterUser({user,password,country,calories}){
   
@@ -138,6 +145,40 @@ function getMealsRegisters({apiKey,id}){
       return Promise.reject({
         codigo: response.status,
         message: "No se pudo recuperar la informacion sobre los registros de comidas",
+      })
+    }
+    
+    return response.json();
+  })
+  .then(data => {
+    console.log(data);
+    return data
+  })
+  .catch(err=> {throw new Error(err)})
+}
+
+
+
+function getMealsRegisters({apiKey,id, idAlimento, cantidad,fecha}){
+  fetch(`${baseURL}/registros.php`,{
+    method:"POST",
+    headers:{
+    "Content-Type":"application/json",
+    apikey:apiKey,
+    iduser:id
+    },
+    body:JSON.stringify({
+      "idAlimento": idAlimento,
+      "idUsuario": id,
+      "cantidad": cantidad,
+      "fecha": fecha
+  })
+})
+  .then(response => {
+    if(!response.ok){
+      return Promise.reject({
+        codigo: response.status,
+        message: "No se pudo hacer el registro de la comida",
       })
     }
     
