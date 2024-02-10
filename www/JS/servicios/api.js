@@ -220,3 +220,30 @@ function deleteMealRegister({apiKey,id,registerId}){
   })
   .catch(err=> {throw new Error(err)})
 }
+
+function getFood({apiKey,id}){
+  fetch(`${baseURL}alimentos.php`,{
+    method:"GET",
+    headers:{
+      "Content-Type":"application/json",
+      apikey:apiKey,
+      iduser:id
+    }
+  })
+  .then(res=>{
+    if(!res.ok){
+      return Promise.reject({
+        codigo: response.status,
+        message: "No se pudo conseguir los alimentos",
+      })
+    }
+    return res.json()
+  })
+  .then(data=>{
+    console.log(data)
+    return data;
+  })
+  .catch(err=>{
+    throw new Error(err.message)
+  })
+}
