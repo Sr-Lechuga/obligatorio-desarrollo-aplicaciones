@@ -98,3 +98,29 @@ function getCountries(){
   })
   .catch(err=> {throw new Error(err)})
 }
+
+function getCountriesPerUsers({apiKey,id}){
+  fetch(`${baseURL}/usuariosPorPais.php`,{
+    method:"GET",
+    headers:{
+    "Content-Type":"application/json",
+    apikey:apiKey,
+    iduser:id
+  }})
+  .then(response => {
+    if(!response.ok){
+      return Promise.reject({
+        codigo: response.status,
+        message: "No se pudo recuperar la informacion de los usuarios por pais",
+      })
+    }
+    
+    return response.json();
+  })
+  .then(data => {
+    console.log(data);
+    return data
+  })
+  .catch(err=> {throw new Error(err)})
+}
+
