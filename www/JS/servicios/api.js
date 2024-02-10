@@ -33,6 +33,12 @@ const registerMealData ={
   fecha:"2024-02-09"
 }
 
+const deleteRegisterMealData ={
+  apiKey:loggedUserJSON.apiKey,
+  id: loggedUserJSON.id,
+  registerId: 803
+}
+
 function RegisterUser({user,password,country,calories}){
   
   fetch(`${baseURL}usuarios.php`,{
@@ -132,6 +138,7 @@ function getCountriesPerUsers({apiKey,id}){
   .catch(err=> {throw new Error(err)})
 }
 
+// getMealsRegisters(loggedUserJSON);
 function getMealsRegisters({apiKey,id}){
   fetch(`${baseURL}/registros.php?idUsuario=${id}`,{
     method:"GET",
@@ -157,9 +164,7 @@ function getMealsRegisters({apiKey,id}){
   .catch(err=> {throw new Error(err)})
 }
 
-
-
-function getMealsRegisters({apiKey,id, idAlimento, cantidad,fecha}){
+function setMealRegister({apiKey,id, idAlimento, cantidad,fecha}){
   fetch(`${baseURL}/registros.php`,{
     method:"POST",
     headers:{
@@ -179,6 +184,31 @@ function getMealsRegisters({apiKey,id, idAlimento, cantidad,fecha}){
       return Promise.reject({
         codigo: response.status,
         message: "No se pudo hacer el registro de la comida",
+      })
+    }
+    
+    return response.json();
+  })
+  .then(data => {
+    console.log(data);
+    return data
+  })
+  .catch(err=> {throw new Error(err)})
+}
+
+function deleteMealRegister({apiKey,id,registerId}){
+  fetch(`${baseURL}/registros.php?idRegistro=${registerId}`,{
+    method:"DELETE",
+    headers:{
+    "Content-Type":"application/json",
+    apikey:apiKey,
+    iduser:id
+  }})
+  .then(response => {
+    if(!response.ok){
+      return Promise.reject({
+        codigo: response.status,
+        message: "No se pudo eliminar el registro",
       })
     }
     
