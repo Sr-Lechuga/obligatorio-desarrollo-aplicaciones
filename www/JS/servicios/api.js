@@ -19,6 +19,11 @@ const registerData = {
   calories: 3000
 }
 
+const loginData ={
+  username: "jonattanlimo@gmail.com",
+  password:"Contrasenia123."
+}
+
 
 
 function RegisterUser({user,password,country,calories}){
@@ -50,7 +55,25 @@ function RegisterUser({user,password,country,calories}){
     console.log(data);
     localStorage.setItem("loggedUser",JSON.stringify(data));
     return data;
-  });
+  }).catch(err => {throw new Error(err)})
 
 }
 
+
+function LoginUser({username,password}){
+  fetch(`${baseURL}login.php`,{
+    method:"POST",
+    headers:{
+      "Content-Type":"application/json"
+    },
+    body:JSON.stringify({usuario:username,password:password})
+  }).then(res=>{
+    if(!res.ok){
+      return Promise.reject("credenciales incorrectas")
+    }
+    return res.json()
+  }).then(data=>{
+    localStorage.setItem("loggedUser",JSON.stringify(data))
+    console.log(data);
+  }).catch(err=> {throw new Error(err)})
+}
