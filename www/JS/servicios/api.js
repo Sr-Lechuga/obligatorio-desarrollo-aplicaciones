@@ -11,6 +11,7 @@ id: 1596
 */
 
 const baseURL = "https://calcount.develotion.com/";
+const loggedUserJSON = JSON.parse(localStorage.getItem("loggedUser"));
 
 const registerData = {
   user: "jonattanlimo@gmail.com",
@@ -124,3 +125,27 @@ function getCountriesPerUsers({apiKey,id}){
   .catch(err=> {throw new Error(err)})
 }
 
+function getMealsRegisters({apiKey,id}){
+  fetch(`${baseURL}/registros.php?idUsuario=${id}`,{
+    method:"GET",
+    headers:{
+    "Content-Type":"application/json",
+    apikey:apiKey,
+    iduser:id
+  }})
+  .then(response => {
+    if(!response.ok){
+      return Promise.reject({
+        codigo: response.status,
+        message: "No se pudo recuperar la informacion sobre los registros de comidas",
+      })
+    }
+    
+    return response.json();
+  })
+  .then(data => {
+    console.log(data);
+    return data
+  })
+  .catch(err=> {throw new Error(err)})
+}
