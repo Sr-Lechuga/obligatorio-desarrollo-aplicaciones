@@ -5,16 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <!-- IONIC -->
     <script
-    type="module"
-    src="https://cdn.jsdelivr.net/npm/@ionic/core/dist/ionic/ionic.esm.js"
+      type="module"
+      src="https://cdn.jsdelivr.net/npm/@ionic/core/dist/ionic/ionic.esm.js"
     ></script>
     <script
-    nomodule
-    src="https://cdn.jsdelivr.net/npm/@ionic/core/dist/ionic/ionic.js"
+      nomodule
+      src="https://cdn.jsdelivr.net/npm/@ionic/core/dist/ionic/ionic.js"
     ></script>
     <link
-    rel="stylesheet"
-    href="https://cdn.jsdelivr.net/npm/@ionic/core/css/ionic.bundle.css"
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@ionic/core/css/ionic.bundle.css"
     />
     <!-- API  -->
     <script src="JS/servicios/api.js" defer></script>
@@ -32,7 +32,10 @@
           url="/ListadoRegistrosAlimenticios"
           component="listadoRegistros"
         ></ion-route>
-        <ion-route url="/AgregarRegistroAlimenticio" component="agregarRegistroAlimenticio"></ion-route>
+        <ion-route
+          url="/AgregarRegistroAlimenticio"
+          component="agregarRegistroAlimenticio"
+        ></ion-route>
         <ion-route url="/Mapa" component="mapa"></ion-route>
         <ion-route url="/LogOut" component="logout"></ion-route>
       </ion-router>
@@ -51,15 +54,18 @@
               >Registro</ion-item
             >
             <!-- Listado de registros con posibilidad a eliminar registro -->
-            <ion-item href="/ListadoRegistrosAlimenticios" onclick="CerrarMenu()"
+            <ion-item
+              href="/ListadoRegistrosAlimenticios"
+              onclick="CerrarMenu()"
               >Listado de registros alimenticios</ion-item
             >
             <ion-item href="/AgregarRegistroAlimenticio" onclick="CerrarMenu()"
-            >Agregar registro alimenticio</ion-item>
-            <ion-item href="/Mapa" onclick="CerrarMenu()"
-            >Mapa</ion-item>
+              >Agregar registro alimenticio</ion-item
+            >
+            <ion-item href="/Mapa" onclick="CerrarMenu()">Mapa</ion-item>
             <ion-item href="/LogOut" onclick="CerrarMenu()"
-            >Cerrar Sesion</ion-item>
+              >Cerrar Sesion</ion-item
+            >
           </ion-list>
         </ion-content>
       </ion-menu>
@@ -86,7 +92,7 @@
           </ion-toolbar>
         </ion-header>
         <ion-content>
-          <h1>¡Bienvenid@!</h1> 
+          <h1>¡Bienvenid@!</h1>
           <p>App para administrar registros alimenticios</p>
         </ion-content>
       </ion-page>
@@ -101,15 +107,16 @@
         </ion-header>
         <ion-content>
           <ion-input
-            label="Nombre de usuario"
-            placeholder="Ingrese nombre de usuario"
-            id="txtNombreUsuario"
+            label="Email"
+            placeholder="Ingrese su email"
+            id="txtLoginEmail"
+            type="email"
           ></ion-input>
           <ion-input
             label="Password"
             placeholder="Ingrese password"
             type="password"
-            id="txtPassword"
+            id="txtLoginPassword"
           ></ion-input>
           <ion-button expand="block" id="btnLogin">Iniciar sesión</ion-button>
           <p id="mensajeLogin"></p>
@@ -125,24 +132,29 @@
           </ion-toolbar>
         </ion-header>
         <ion-content>
-          <ion-input placeholder="Ingrese nombre" id="txtNombre"></ion-input>
           <ion-input
-            placeholder="Ingrese apellido"
-            id="txtApellido"
-          ></ion-input>
-          <ion-input
-            placeholder="Ingrese dirección"
-            id="txtDireccion"
-          ></ion-input>
-          <ion-input
-            placeholder="Ingrese email"
-            id="txtEmail"
+            placeholder="Ingrese su email"
+            id="txtRegisterEmail"
             type="email"
           ></ion-input>
           <ion-input
-            placeholder="Ingrese password"
-            id="txtPasswordRegistro"
+            placeholder="Ingrese su contraseña"
+            id="txtRegisterPassword"
             type="password"
+          ></ion-input>
+          <ion-input
+            placeholder="Ingrese su contraseña nuevamente"
+            id="txtRegisterCheckPassword"
+            type="password"
+          ></ion-input>
+          <ion-input
+            placeholder="Ingrese su pais"
+            id="txtRegisterCountry"
+          ></ion-input>
+          <ion-input
+            placeholder="Ingrese su meta de calorias diarias"
+            id="txtRegisterCalories"
+            type="number"
           ></ion-input>
           <ion-button expand="block" id="btnRegistro">Registrarse</ion-button>
 

@@ -13,6 +13,7 @@ function Inicializar() {
     document.querySelector("#ruteo").push("/");
   }
 }
+
 function OcultarPantallas() {
   let pantallas = document.querySelectorAll(".ion-page");
   for (let i = 1; i < pantallas.length; i++) {
@@ -25,7 +26,7 @@ function AgregarEventos() {
     .querySelector("#ruteo")
     .addEventListener("ionRouteWillChange", Navegar);
   document.querySelector("#btnLogin").addEventListener("click", Login);
-  document.querySelector("#btnRegistro").addEventListener("click", Registro);
+  document.querySelector("#btnRegistro").addEventListener("click", Register);
 }
 
 function CerrarMenu() {
@@ -55,31 +56,47 @@ function Navegar(event) {
 }
 
 // Función para manejar la interfaz de usuario
-function HandleUserLoginUI(data) {
+function HandleUserGUIOnLogin(data) {
   //En caso que la respuesta de la API sea correcta, no devuelve una propiedad 'error'
   if (data.error !== undefined) {
     document.querySelector("#mensajeLogin").innerHTML = `${data.error}`;
   } else {
-    document.querySelector("#mensajeLogin").innerHTML = "Inicio de sesión correcto";
-    document.querySelector("#txtNombreUsuario").value = "";
-    document.querySelector("#txtPassword").value = "";
+    document.querySelector("#mensajeLogin").innerHTML =
+      "Inicio de sesión correcto";
+    document.querySelector("#txtLoginEmail").value = "";
+    document.querySelector("#txtLoginPassword").value = "";
   }
+}
+
+function GetLoginCredentialsFromGUI() {
+  const email = document.querySelector("#txtLoginEmail").value;
+  const password = document.querySelector("#txtLoginPassword").value;
+
+  //Validaciones
+  if (email.trim().length == 0) {
+    throw new Error("El email es obligatorio");
+  }
+  if (password.trim().length == 0) {
+    throw new Error("La contraseña es obligatoria");
+  }
+
+  return (validatedCredentials = {
+    email: email,
+    password: password,
+  });
 }
 
 // Función principal de inicio de sesión
 function Login() {
-  let credentials = {
-    username: document.querySelector("#txtNombreUsuario").value,
-    password: document.querySelector("#txtPassword").value
-  };
-
   try {
-    loginUserAPI(credentials)
-      .then( data => {
-        localStorage.setItem("loggedUser",data);
-        HandleUserLoginUI(data);
+    const credentials = GetLoginCredentialsFromGUI();
+    const response = loginUserAPI(credentials).json();
+    response
+      .then((data) => {
+        HandleUserGUIOnLogin(data);
+        localStorage.setItem("loggedUser", JSON.stringify(data));
       })
-      .catch(error => {
+      .catch((error) => {
         document.querySelector("#mensajeLogin").innerHTML = error.message;
       });
   } catch (error) {
@@ -87,72 +104,85 @@ function Login() {
   }
 }
 
-function Registro() {
-  let email = document.querySelector("#txtEmail").value;
-  let password = document.querySelector("#txtPasswordRegistro").value;
-  let nombre = document.querySelector("#txtNombre").value;
-  let apellido = document.querySelector("#txtApellido").value;
-  let direccion = document.querySelector("#txtDireccion").value;
-  try {
-    if (nombre.trim().length == 0) {
-      throw new Error("El nombre es obligatorio");
-    }
-    if (apellido.trim().length == 0) {
-      throw new Error("El apellido es obligatorio");
-    }
-    if (direccion.trim().length == 0) {
-      throw new Error("La dirección es obligatorio");
-    }
-    if (email.trim().length == 0) {
-      throw new Error("El email es obligatorio");
-    }
-    if (password.trim().length == 0) {
-      throw new Error("La password es obligatoria");
-    }
-    let datos = {
-      nombre: nombre,
-      apellido: apellido,
-      direccion: direccion,
-      email: email,
-      password: password,
-    };
-    fetch(baseURL + "/usuarios", {
-      method: "POST",
-      headers: {
-        "Content-type": "application/json",
-      },
-      body: JSON.stringify(datos),
-    })
-      .then(function (response) {
-        return response.json();
-      })
-      .then(function (datos) {
-        if (datos.error == "") {
-          document.querySelector("#mensajeRegistro").innerHTML =
-            "Registro exitoso";
-          LimpiarCampos();
-        } else {
-          document.querySelector(
-            "#mensajeRegistro"
-          ).innerHTML = `${datos.error}`;
-        }
-      })
-      .catch(function (error) {
-        document.querySelector(
-          "#mensajeRegistro"
-        ).innerHTML = `${error.message}`;
-      });
-  } catch (Error) {
-    document.querySelector("#mensajeRegistro").innerHTML = `${Error.message}`;
+function GetRegisterDataFromGUI() {
+  const userName = document.querySelector("#txtRegisterEmail").value;
+  const password = document.querySelector("#txtRegisterPassword").value;
+  const checkPassword = document.querySelector(
+    "#txtRegisterCheckPassword"
+  ).value;
+  const country = document.querySelector("#txtRegisterCountry").value;
+  const caloriesDailyGoal = document.querySelector(
+    "#txtRegisterCalories"
+  ).value;
+  const validPasswordRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*\W).{8,}$/;
+
+  //Validaciones
+  if (userName.trim().length == 0) {
+    throw new Error("El email es obligatorio");
+  }
+  if (password.trim().length == 0) {
+    throw new Error("La contraseña es obligatoria");
+  }
+  if (validPasswordRegex.exec(password) == null) {
+    throw new Error(
+      "La contraseña debe contener al menos 8 caracteres, una mayúscula, un numero y un caracter no alfanumérico"
+    );
+  }
+  if (password !== checkPassword) {
+    throw new Error("Las contraseñas no coinciden");
+  }
+  if (country.trim().length == 0) {
+    throw new Error("El pais es obligatorio");
+  }
+  if (caloriesDailyGoal.trim().length == 0) {
+    throw new Error("La meta de calorias es obligatoria");
+  }
+  if (parseInt(caloriesDailyGoal) == NaN) {
+    throw new Error("La meta de calorias debe ser un numero");
+  }
+
+  return (validRegisterData = {
+    usuario: userName,
+    password: password,
+    idPais: country,
+    caloriasDiarias: caloriesDailyGoal,
+  });
+}
+
+function HandleGUIOnRegister(data) {
+  if (data.error !== undefined)
+    document.querySelector("#mensajeLogin").innerHTML = `${data.error}`;
+  else {
+    LimpiarCampos();
+    document.querySelector("#mensajeRegistro").innerHTML = "Registro exitoso";
   }
 }
-function LimpiarCampos() {
-  document.querySelector("#txtEmail").value = "";
-  document.querySelector("#txtPasswordRegistro").value = "";
-  document.querySelector("#txtNombre").value = "";
-  document.querySelector("#txtApellido").value = "";
-  document.querySelector("#txtDireccion").value = "";
+
+async function Register() {
+  const registerData = GetRegisterDataFromGUI();
+
+  try {
+    const response = await RegisterUserAPI(registerData);
+    console.log(response);
+
+    const data = await response.json();
+    console.log(data);
+
+    HandleGUIOnRegister(data);
+    localStorage.setItem("loggedUser", JSON.stringify(data)); 
+  } catch (error) {
+    document.querySelector("#mensajeRegistro").innerHTML = error.message;
+  }
 }
+
+function LimpiarCampos() {
+  document.querySelector("#txtRegisterEmail").value = "";
+  document.querySelector("#txtRegisterPassword").value = "";
+  document.querySelector("#txtRegisterCheckPassword").value = "";
+  document.querySelector("#txtRegisterCountry").value = "";
+  document.querySelector("#txtRegisterCalories").value = "";
+}
+
 function ObtenerProductos() {
   if (
     localStorage.getItem("token") != null &&

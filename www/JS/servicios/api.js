@@ -11,36 +11,35 @@ id: 1596
 */
 
 const baseURL = "https://calcount.develotion.com/";
-const loggedUserJSON = JSON.parse(localStorage.getItem("loggedUser"));
+const loggedUserJSON = JSON.parse(localStorage.getItem("loggedUser")) ? JSON.parse(localStorage.getItem("loggedUser")) : "";
 
-const registerData = {
-  user: "jonattanlimu@gmail.com",
-  password: "Contrasenia123.",
-  country: 235,
-  calories: 3000
-}
+// const registerData = {
+//   user: "jonattanlimu@gmail.com",
+//   password: "Contrasenia123.",
+//   country: 235,
+//   calories: 3000
+// }
 
-const loginData ={
-  username: "jonattanlimo@gmail.com",
-  password:"Contrasenia123."
-}
+// const loginData ={
+//   username: "jonattanlimo@gmail.com",
+//   password:"Contrasenia123."
+// }
 
-const registerMealData ={
-  apiKey:loggedUserJSON.apiKey,
-  id: loggedUserJSON.id,
-  idAlimento:8,
-  cantidad:450,
-  fecha:"2024-02-09"
-}
+// const registerMealData ={
+//   apiKey:loggedUserJSON.apiKey,
+//   id: loggedUserJSON.id,
+//   idAlimento:8,
+//   cantidad:450,
+//   fecha:"2024-02-09"
+// }
 
-const deleteRegisterMealData ={
-  apiKey:loggedUserJSON.apiKey,
-  id: loggedUserJSON.id,
-  registerId: 803
-}
+// const deleteRegisterMealData ={
+//   apiKey:loggedUserJSON.apiKey,
+//   id: loggedUserJSON.id,
+//   registerId: 803
+// }
 
-function RegisterUserAPI({user,password,country,calories}){
-  
+async function RegisterUserAPI({user,password,country,calories}){
   fetch(`${baseURL}usuarios.php`,{
     method:"POST",
     header:{
@@ -56,20 +55,19 @@ function RegisterUserAPI({user,password,country,calories}){
   .then(response => {
     if(!response.ok){
       return Promise.reject({
-        codigo: response.status,
+        error: response.status,
         message: "Las datos de registo no son validos",
       });
     }
     else{
-      return response.json();
+      return response;
     }
   })
   // .then(data => {
   //   console.log(data);
   //   localStorage.setItem("loggedUser",JSON.stringify(data));
   //   return data;
-  // }).catch(err => {throw new Error(err)})
-
+  // })
 }
 // Función para manejar la autenticación del usuario
 async function loginUserAPI({ username, password }) {
