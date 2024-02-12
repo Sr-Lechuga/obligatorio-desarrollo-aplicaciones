@@ -56,16 +56,10 @@ function Navegar(event) {
 }
 
 // Función para manejar la interfaz de usuario
-function HandleUserGUIOnLogin(data) {
-  //En caso que la respuesta de la API sea correcta, no devuelve una propiedad 'error'
-  if (data.error !== undefined) {
-    document.querySelector("#mensajeLogin").innerHTML = `${data.error}`;
-  } else {
-    document.querySelector("#mensajeLogin").innerHTML =
-      "Inicio de sesión correcto";
+function HandleUserGUIOnLogin() {
+    document.querySelector("#mensajeLogin").innerHTML = "Inicio de sesión correcto";
     document.querySelector("#txtLoginEmail").value = "";
     document.querySelector("#txtLoginPassword").value = "";
-  }
 }
 
 function GetLoginCredentialsFromGUI() {
@@ -87,25 +81,24 @@ function GetLoginCredentialsFromGUI() {
 }
 
 // Función principal de inicio de sesión
-function Login() {
+async function Login() {
   try {
     const credentials = GetLoginCredentialsFromGUI();
-    const response = loginUserAPI(credentials).json();
-    response
-      .then((data) => {
-        HandleUserGUIOnLogin(data);
-        localStorage.setItem("loggedUser", JSON.stringify(data));
-      })
-      .catch((error) => {
-        document.querySelector("#mensajeLogin").innerHTML = error.message;
-      });
+    //Hace la llamada a la API y devuelve un json con datos del error o de respuesta exitosa
+    const responseData = await loginUserAPI(credentials);
+    //En caso que la respuesta de la API sea correcta, no devuelve una propiedad 'error'
+    if (responseData.error !== undefined) {
+      throw new Error(`${responseData.message} (codigo de error: ${responseData.error})`);
+    }
+    HandleUserGUIOnLogin();
+    localStorage.setItem("loggedUser", JSON.stringify(responseData));
   } catch (error) {
     document.querySelector("#mensajeLogin").innerHTML = error.message;
   }
 }
 
 function GetRegisterDataFromGUI() {
-  const userName = document.querySelector("#txtRegisterEmail").value;
+  const email = document.querySelector("#txtRegisterEmail").value;
   const password = document.querySelector("#txtRegisterPassword").value;
   const checkPassword = document.querySelector(
     "#txtRegisterCheckPassword"
@@ -117,7 +110,7 @@ function GetRegisterDataFromGUI() {
   const validPasswordRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*\W).{8,}$/;
 
   //Validaciones
-  if (userName.trim().length == 0) {
+  if (email.trim().length == 0) {
     throw new Error("El email es obligatorio");
   }
   if (password.trim().length == 0) {
@@ -142,16 +135,16 @@ function GetRegisterDataFromGUI() {
   }
 
   return (validRegisterData = {
-    usuario: userName,
+    user: email,
     password: password,
-    idPais: country,
-    caloriasDiarias: caloriesDailyGoal,
+    country: country,
+    calories: caloriesDailyGoal,
   });
 }
 
 function HandleGUIOnRegister(data) {
   if (data.error !== undefined)
-    document.querySelector("#mensajeLogin").innerHTML = `${data.error}`;
+    throw new Error(`${data.message} (codigo de error: ${data.error})`)
   else {
     LimpiarCampos();
     document.querySelector("#mensajeRegistro").innerHTML = "Registro exitoso";
@@ -162,14 +155,10 @@ async function Register() {
   const registerData = GetRegisterDataFromGUI();
 
   try {
-    const response = await RegisterUserAPI(registerData);
-    console.log(response);
-
-    const data = await response.json();
-    console.log(data);
-
-    HandleGUIOnRegister(data);
-    localStorage.setItem("loggedUser", JSON.stringify(data)); 
+    const responseData = await RegisterUserAPI(registerData);
+    console.log(responseData);
+    HandleGUIOnRegister(responseData);
+    localStorage.setItem("loggedUser", JSON.stringify(responseData)); 
   } catch (error) {
     document.querySelector("#mensajeRegistro").innerHTML = error.message;
   }

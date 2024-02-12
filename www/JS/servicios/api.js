@@ -40,7 +40,7 @@ const loggedUserJSON = JSON.parse(localStorage.getItem("loggedUser")) ? JSON.par
 // }
 
 async function RegisterUserAPI({user,password,country,calories}){
-  fetch(`${baseURL}usuarios.php`,{
+  return fetch(`${baseURL}usuarios.php`,{
     method:"POST",
     header:{
     "Content-Type": "application/json"
@@ -53,39 +53,52 @@ async function RegisterUserAPI({user,password,country,calories}){
     })
   })
   .then(response => {
-    if(!response.ok){
-      return Promise.reject({
-        error: response.status,
-        message: "Las datos de registo no son validos",
-      });
+    return response.json();
+  }).then(data => {
+    if(data.codigo == 409){
+      return {
+        error: 409,
+        message: data.mensaje
+      };
     }
     else{
-      return response;
+      return data;
     }
-  })
-  // .then(data => {
-  //   console.log(data);
-  //   localStorage.setItem("loggedUser",JSON.stringify(data));
-  //   return data;
-  // })
+  }).catch( error => {
+    return {
+      error: 400,
+      message: error.message
+    }
+  });
 }
 // Función para manejar la autenticación del usuario
-async function loginUserAPI({ username, password }) {
+async function loginUserAPI({ email, password }) {
   return fetch(`${baseURL}login.php`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
     },
-    body: JSON.stringify({ usuario: username, password: password })
-  })
-    .then(res => {
-      if (!res.ok) {
-        return Promise.reject("Credenciales incorrectas");
-      }
-      return res.json();
+    body: JSON.stringify({ usuario: email, password: password })
     })
-    .catch(err => {
-      throw new Error(err);
+    .then( response => {
+      return response.json();
+    })
+    .then( data => {
+      if(data.codigo == 409){
+        return {
+          error: 409,
+          message: data.mensaje
+        };
+      }
+      else{
+        return data;
+      }
+    })
+    .catch(error => {
+      return {
+        error: 400,
+        message: error.message
+      }
     });
 }
 
