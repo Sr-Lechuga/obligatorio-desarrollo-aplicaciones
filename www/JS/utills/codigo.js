@@ -1,8 +1,6 @@
 let token = "";
 Inicializar();
 
-
-
 function Inicializar() {
   token = JSON.parse(localStorage.getItem("loggedUser")) ? JSON.parse(localStorage.getItem("loggedUser")).apiKey : "";
   OcultarPantallas();
@@ -11,23 +9,26 @@ function Inicializar() {
   if ( token !== undefined && token.trim().length > 0 ) {
     //Logged
     document.querySelector("#ruteo").push("/ListadoRegistrosAlimenticios");
-    document.querySelector("ion-item[href='/LogOut']").style.display = "block";
-    document.querySelector("ion-item[href='/Registro']").style.display = "none";
-    document.querySelector("ion-item[href='/Login']").style.display = "none";
+    HandleGUIMenuOnLogin();
   } else {
     //Offline
     document.querySelector("#ruteo").push("/Login");
-    document.querySelector("ion-item[href='/LogOut']").style.display = "none";
-    document.querySelector("ion-item[href='/Registro']").style.display = "block";
-    document.querySelector("ion-item[href='/Login']").style.display = "block";
+    HandleGUIMenuOnLogOut();
   }
 }
 
+function LogOut(){
+  CerrarMenu();
+  LogOutAPI();
+  HandleGUIMenuOnLogOut();
+  document.querySelector("#ruteo").push("/");
+}
+
 function OcultarPantallas() {
-  let pantallas = document.querySelectorAll(".ion-page");
-  for (let i = 1; i < pantallas.length; i++) {
-    pantallas[i].style.display = "none";
-  }
+  let screens = document.querySelectorAll("ion-page");
+  screens.forEach(screen => {
+    screen.style.display = 'none';
+  })
 }
 
 function AgregarEventos() {
@@ -67,14 +68,30 @@ function Navegar(event) {
   }
 }
 
+function HandleGUIMenuOnLogin(){
+  document.querySelector("ion-item[href='/LogOut']").style.display = "block";
+  document.querySelector("ion-item[href='/Registro']").style.display = "none";
+  document.querySelector("ion-item[href='/Login']").style.display = "none";
+  document.querySelector("ion-item[href='/ListadoRegistrosAlimenticios']").style.display = "block";
+  document.querySelector("ion-item[href='/AgregarRegistroAlimenticio']").style.display = "block";
+  document.querySelector("ion-item[href='/Mapa']").style.display = "block";
+}
+
+function HandleGUIMenuOnLogOut(){
+  document.querySelector("ion-item[href='/LogOut']").style.display = "none";
+  document.querySelector("ion-item[href='/Registro']").style.display = "block";
+  document.querySelector("ion-item[href='/Login']").style.display = "block";
+  document.querySelector("ion-item[href='/ListadoRegistrosAlimenticios']").style.display = "none";
+  document.querySelector("ion-item[href='/AgregarRegistroAlimenticio']").style.display = "none";
+  document.querySelector("ion-item[href='/Mapa']").style.display = "none";
+}
+
 // Función para manejar la interfaz de usuario
 function HandleUserGUIOnLogin() {
     document.querySelector("#mensajeLogin").innerHTML = "Inicio de sesión correcto";
     document.querySelector("#txtLoginEmail").value = "";
     document.querySelector("#txtLoginPassword").value = "";
-    document.querySelector("ion-item[href='/LogOut']").style.display = "block";
-    document.querySelector("ion-item[href='/Registro']").style.display = "none";
-    document.querySelector("ion-item[href='/Login']").style.display = "none";
+    HandleGUIMenuOnLogin();
 }
 
 function GetLoginCredentialsFromGUI() {
@@ -107,6 +124,9 @@ async function Login() {
     }
     localStorage.setItem("loggedUser", JSON.stringify(responseData));
     HandleUserGUIOnLogin();
+    setTimeout(()=>{
+      document.querySelector("#ruteo").push("/");
+    },2000);
   } catch (error) {
       document.querySelector("#mensajeLogin").innerHTML = error.message;
   }
@@ -153,7 +173,6 @@ console.log(country);
   });
 }
 
-// <ion-select-option value="apple">Apple</ion-select-option>
 async function HandleGUIOnLoadRegister(){
   try{
     const paises = await getCountriesAPI();
@@ -167,13 +186,11 @@ async function HandleGUIOnLoadRegister(){
   }
 }
 
-
-function HandleGUIOnRegister(data) {
+function HandleGUIOnRegister() {
     CleanRegisterFields();
     document.querySelector("#registerMessage").innerHTML = "Registro exitoso";
-    document.querySelector("ion-item[href='/LogOut']").style.display = "block";
-    document.querySelector("ion-item[href='/Registro']").style.display = "none";
-    document.querySelector("ion-item[href='/Login']").style.display = "none";
+    //Para auto log-in
+    HandleGUIMenuOnLogin();
 }
 
 function CleanRegisterFields() {
@@ -193,11 +210,13 @@ async function Register() {
     }
     HandleGUIOnRegister(responseData);
     localStorage.setItem("loggedUser", JSON.stringify(responseData));
+    setTimeout(()=>{
+      document.querySelector("#ruteo").push("/");
+    },2000);
   } catch (error) {
     document.querySelector("#registerMessage").innerHTML = error.message;
   }
 }
-
 
 function ObtenerProductos() {
   if (
