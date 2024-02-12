@@ -230,8 +230,8 @@ function deleteMealRegisterAPI({apiKey,id,registerId}){
   .catch(err=> {throw new Error(err)})
 }
 
-function getFoodAPI({apiKey,id}){
-  fetch(`${baseURL}alimentos.php`,{
+async function getFoodAPI({apiKey,id}){
+  return fetch(`${baseURL}alimentos.php`,{
     method:"GET",
     headers:{
       "Content-Type":"application/json",
@@ -250,7 +250,7 @@ function getFoodAPI({apiKey,id}){
   })
   .then(data=>{
     console.log(data)
-    return data;
+    return data.alimentos;
   })
   .catch(err=>{
     throw new Error(err.message)

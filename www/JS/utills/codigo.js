@@ -1,7 +1,7 @@
 let token = "";
 Inicializar();
 
-function Inicializar() {
+async function Inicializar() {
   token = JSON.parse(localStorage.getItem("loggedUser")) ? JSON.parse(localStorage.getItem("loggedUser")).apiKey : "";
   OcultarPantallas();
   AgregarEventos();
@@ -10,6 +10,9 @@ function Inicializar() {
     //Logged
     document.querySelector("#ruteo").push("/ListadoRegistrosAlimenticios");
     HandleGUIMenuOnLogin();
+    if(localStorage.getItem("alimentos") === undefined){
+      localStorage.setItem("alimentos",JSON.stringify(await getFoodAPI(JSON.parse(localStorage.getItem("loggedUser")))))
+    }
   } else {
     //Offline
     document.querySelector("#ruteo").push("/Login");
@@ -63,7 +66,7 @@ function Navegar(event) {
       document.querySelector("#listadoRegistrosAlimenticios").style.display = "block";
       break;
       case "/AgregarRegistroAlimenticio":
-        ObtenerProductos();
+        RegisterFood();
         document.querySelector("#agregarRegistroAlimenticio").style.display = "block";
         break;
     default:
@@ -127,6 +130,7 @@ async function Login() {
       throw new Error(`${responseData.message} (codigo de error: ${responseData.error})`);
     }
     localStorage.setItem("loggedUser", JSON.stringify(responseData));
+    localStorage.setItem("alimentos",JSON.stringify(await getFoodAPI(responseData)))
     HandleUserGUIOnLogin();
     setTimeout(()=>{
       document.querySelector("#ruteo").push("/");
@@ -190,6 +194,25 @@ async function HandleGUIOnLoadRegister(){
   }
 }
 
+ function HandleGUIOnLoadRegisterFood(){
+  try{
+    const alimentos = JSON.parse(localStorage.getItem("alimentos"))
+    let options = `<ion-select-option value="0">Seleccione un alimento</ion-select-option>`;
+    alimentos.forEach( alimento => {
+      options += ` <ion-select-option value="${alimento.id}">${alimento.nombre} (${alimento.porcion.charAt(alimento.porcion.length-1)})</ion-select-option>`
+    });
+    document.querySelector("#selectFood").innerHTML = options;
+  } catch(error){
+    alert(error.message);
+    // document.querySelector("#registerMessage").innerHTML = error.message;
+  }
+}
+
+function RegisterFood(){
+  HandleGUIOnLoadRegisterFood();
+}
+
+
 function HandleGUIOnRegister() {
     CleanRegisterFields();
     document.querySelector("#registerMessage").innerHTML = "Registro exitoso";
@@ -214,6 +237,7 @@ async function Register() {
     }
     HandleGUIOnRegister(responseData);
     localStorage.setItem("loggedUser", JSON.stringify(responseData));
+    localStorage.setItem("alimentos",JSON.stringify(await getFoodAPI(responseData)))
     setTimeout(()=>{
       document.querySelector("#ruteo").push("/");
     },2000);
