@@ -62,6 +62,10 @@ function Navegar(event) {
       ObtenerProductos();
       document.querySelector("#listadoRegistrosAlimenticios").style.display = "block";
       break;
+      case "/AgregarRegistroAlimenticio":
+        ObtenerProductos();
+        document.querySelector("#agregarRegistroAlimenticio").style.display = "block";
+        break;
     default:
       document.querySelector("#incio").style.display = "block";
       break;
