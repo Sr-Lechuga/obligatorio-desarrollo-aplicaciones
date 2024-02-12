@@ -30,7 +30,7 @@
         <ion-route url="/Registro" component="registro"></ion-route>
         <ion-route
           url="/ListadoRegistrosAlimenticios"
-          component="listadoRegistros"
+          component="listadoRegistrosAlimenticios"
         ></ion-route>
         <ion-route
           url="/AgregarRegistroAlimenticio"
@@ -60,7 +60,7 @@
               >Listado de registros alimenticios</ion-item
             >
             <ion-item href="/AgregarRegistroAlimenticio" onclick="CerrarMenu()"
-              >Agregar registro alimenticio</ion-item
+              >Agregar registro alimenticion</ion-item
             >
             <ion-item href="/Mapa" onclick="CerrarMenu()">Mapa</ion-item>
             <ion-item href="/LogOut" onclick="CerrarMenu()"
@@ -147,18 +147,17 @@
             id="txtRegisterCheckPassword"
             type="password"
           ></ion-input>
-          <ion-input
-            placeholder="Ingrese su pais"
-            id="txtRegisterCountry"
-          ></ion-input>
+          <ion-item>
+            <ion-select id="selectRegisterCountry" value="0" placeholder="Pais">
+            </ion-select>
+          </ion-item>
           <ion-input
             placeholder="Ingrese su meta de calorias diarias"
             id="txtRegisterCalories"
             type="number"
           ></ion-input>
           <ion-button expand="block" id="btnRegistro">Registrarse</ion-button>
-
-          <p id="mensajeRegistro"></p>
+          <p id="registerMessage"></p>
         </ion-content>
       </ion-page>
       <ion-page id="listadoRegistrosAlimenticios" class="ion-page">
@@ -167,7 +166,7 @@
             <ion-buttons slot="start">
               <ion-menu-button></ion-menu-button>
             </ion-buttons>
-            <ion-title>Listado de productos</ion-title>
+            <ion-title>Listado de registros alimenticios</ion-title>
           </ion-toolbar>
         </ion-header>
         <ion-content id="listado"></ion-content>

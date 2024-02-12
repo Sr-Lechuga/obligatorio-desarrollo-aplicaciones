@@ -54,7 +54,8 @@ async function RegisterUserAPI({user,password,country,calories}){
   })
   .then(response => {
     return response.json();
-  }).then(data => {
+  })
+  .then(data => {
     if(data.codigo == 409){
       return {
         error: 409,
@@ -106,8 +107,8 @@ function LogOutAPI(){
   localStorage.clear();
 }
 
-function getCountriesAPI(){
-  fetch(`${baseURL}/paises.php`)
+async function getCountriesAPI(){
+  return fetch(`${baseURL}/paises.php`)
   .then(response => {
     if(!response.ok){
       return Promise.reject({
@@ -115,12 +116,9 @@ function getCountriesAPI(){
         message: "No se pudo recuperar la informacion de paises",
       })
     }
-    
     return response.json();
   })
-  .then(data => {
-    console.log(data)
-  })
+  .then(data=> data.paises)
   .catch(err=> {throw new Error(err)})
 }
 

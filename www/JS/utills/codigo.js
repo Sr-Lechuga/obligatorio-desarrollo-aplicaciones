@@ -1,16 +1,25 @@
 let token = "";
 Inicializar();
 
+
+
 function Inicializar() {
+  token = JSON.parse(localStorage.getItem("loggedUser")) ? JSON.parse(localStorage.getItem("loggedUser")).apiKey : "";
   OcultarPantallas();
   AgregarEventos();
-  if (
-    localStorage.getItem("token") != null &&
-    localStorage.getItem("token").trim().length > 0
-  ) {
+  HandleGUIOnLoadRegister();
+  if ( token !== undefined && token.trim().length > 0 ) {
+    //Logged
     document.querySelector("#ruteo").push("/ListadoRegistrosAlimenticios");
+    document.querySelector("ion-item[href='/LogOut']").style.display = "block";
+    document.querySelector("ion-item[href='/Registro']").style.display = "none";
+    document.querySelector("ion-item[href='/Login']").style.display = "none";
   } else {
-    document.querySelector("#ruteo").push("/");
+    //Offline
+    document.querySelector("#ruteo").push("/Login");
+    document.querySelector("ion-item[href='/LogOut']").style.display = "none";
+    document.querySelector("ion-item[href='/Registro']").style.display = "block";
+    document.querySelector("ion-item[href='/Login']").style.display = "block";
   }
 }
 
@@ -44,13 +53,16 @@ function Navegar(event) {
       document.querySelector("#mensajeLogin").innerHTML = "";
       document.querySelector("#login").style.display = "block";
       break;
-    case "/ListadoProductos":
+    case "/Registro":
+      document.querySelector("#registerMessage").innerHTML = "";
+      document.querySelector("#registro").style.display = "block";
+      break;
+    case "/ListadoRegistrosAlimenticios":
       ObtenerProductos();
-      document.querySelector("#listadoRegistrosAlimenticios").style.display =
-        "block";
+      document.querySelector("#listadoRegistrosAlimenticios").style.display = "block";
       break;
     default:
-      document.querySelector("#registro").style.display = "block";
+      document.querySelector("#incio").style.display = "block";
       break;
   }
 }
@@ -60,6 +72,9 @@ function HandleUserGUIOnLogin() {
     document.querySelector("#mensajeLogin").innerHTML = "Inicio de sesión correcto";
     document.querySelector("#txtLoginEmail").value = "";
     document.querySelector("#txtLoginPassword").value = "";
+    document.querySelector("ion-item[href='/LogOut']").style.display = "block";
+    document.querySelector("ion-item[href='/Registro']").style.display = "none";
+    document.querySelector("ion-item[href='/Login']").style.display = "none";
 }
 
 function GetLoginCredentialsFromGUI() {
@@ -90,25 +105,21 @@ async function Login() {
     if (responseData.error !== undefined) {
       throw new Error(`${responseData.message} (codigo de error: ${responseData.error})`);
     }
-    HandleUserGUIOnLogin();
     localStorage.setItem("loggedUser", JSON.stringify(responseData));
+    HandleUserGUIOnLogin();
   } catch (error) {
-    document.querySelector("#mensajeLogin").innerHTML = error.message;
+      document.querySelector("#mensajeLogin").innerHTML = error.message;
   }
 }
 
 function GetRegisterDataFromGUI() {
   const email = document.querySelector("#txtRegisterEmail").value;
   const password = document.querySelector("#txtRegisterPassword").value;
-  const checkPassword = document.querySelector(
-    "#txtRegisterCheckPassword"
-  ).value;
-  const country = document.querySelector("#txtRegisterCountry").value;
-  const caloriesDailyGoal = document.querySelector(
-    "#txtRegisterCalories"
-  ).value;
+  const checkPassword = document.querySelector("#txtRegisterCheckPassword").value;
+  const country = document.querySelector("#selectRegisterCountry").value;
+  const caloriesDailyGoal = document.querySelector("#txtRegisterCalories").value;
   const validPasswordRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*\W).{8,}$/;
-
+console.log(country);
   //Validaciones
   if (email.trim().length == 0) {
     throw new Error("El email es obligatorio");
@@ -142,35 +153,51 @@ function GetRegisterDataFromGUI() {
   });
 }
 
+// <ion-select-option value="apple">Apple</ion-select-option>
+async function HandleGUIOnLoadRegister(){
+  try{
+    const paises = await getCountriesAPI();
+    let options = `<ion-select-option value="0">Seleccione un pais</ion-select-option>`;
+    paises.forEach( pais => {
+      options += ` <ion-select-option value="${pais.id}">${pais.name}</ion-select-option>`
+    });
+    document.querySelector("#selectRegisterCountry").innerHTML = options;
+  } catch(error){
+    document.querySelector("#registerMessage").innerHTML = error.message;
+  }
+}
+
+
 function HandleGUIOnRegister(data) {
-  if (data.error !== undefined)
-    throw new Error(`${data.message} (codigo de error: ${data.error})`)
-  else {
-    LimpiarCampos();
-    document.querySelector("#mensajeRegistro").innerHTML = "Registro exitoso";
-  }
+    CleanRegisterFields();
+    document.querySelector("#registerMessage").innerHTML = "Registro exitoso";
+    document.querySelector("ion-item[href='/LogOut']").style.display = "block";
+    document.querySelector("ion-item[href='/Registro']").style.display = "none";
+    document.querySelector("ion-item[href='/Login']").style.display = "none";
 }
 
-async function Register() {
-  const registerData = GetRegisterDataFromGUI();
-
-  try {
-    const responseData = await RegisterUserAPI(registerData);
-    console.log(responseData);
-    HandleGUIOnRegister(responseData);
-    localStorage.setItem("loggedUser", JSON.stringify(responseData)); 
-  } catch (error) {
-    document.querySelector("#mensajeRegistro").innerHTML = error.message;
-  }
-}
-
-function LimpiarCampos() {
+function CleanRegisterFields() {
   document.querySelector("#txtRegisterEmail").value = "";
   document.querySelector("#txtRegisterPassword").value = "";
   document.querySelector("#txtRegisterCheckPassword").value = "";
   document.querySelector("#txtRegisterCountry").value = "";
   document.querySelector("#txtRegisterCalories").value = "";
 }
+
+async function Register() {
+  try {
+    const registerData = GetRegisterDataFromGUI();
+    const responseData = await RegisterUserAPI(registerData);
+    if(responseData.error !== undefined){
+      throw new Error(`${data.message} (codigo de error: ${data.error})`);
+    }
+    HandleGUIOnRegister(responseData);
+    localStorage.setItem("loggedUser", JSON.stringify(responseData));
+  } catch (error) {
+    document.querySelector("#registerMessage").innerHTML = error.message;
+  }
+}
+
 
 function ObtenerProductos() {
   if (
