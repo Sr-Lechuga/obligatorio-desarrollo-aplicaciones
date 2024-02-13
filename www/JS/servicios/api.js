@@ -9,7 +9,7 @@ caloriasDiarias: 3000
 codigo: 200
 id: 1596 
 */
-
+const baseURLImage = "https://calcount.develotion.com/imgs/";
 const baseURL = "https://calcount.develotion.com/";
 const loggedUserJSON = JSON.parse(localStorage.getItem("loggedUser")) ? JSON.parse(localStorage.getItem("loggedUser")) : "";
 
@@ -148,8 +148,8 @@ function getCountriesPerUsersAPI({apiKey,id}){
 }
 
 // getMealsRegisters(loggedUserJSON);
-function getMealsRegistersAPI({apiKey,id}){
-  fetch(`${baseURL}/registros.php?idUsuario=${id}`,{
+async function getMealsRegistersAPI({apiKey,id}){
+  return fetch(`${baseURL}/registros.php?idUsuario=${id}`,{
     method:"GET",
     headers:{
     "Content-Type":"application/json",
@@ -167,10 +167,18 @@ function getMealsRegistersAPI({apiKey,id}){
     return response.json();
   })
   .then(data => {
-    console.log(data);
-    return data
+    const registrosNoOrdenados = data.registros;
+    return registrosNoOrdenados.sort((a,b)=> {
+      if(a.fecha>b.fecha){
+        return -1;
+      }
+      else if(b.fecha>a.fecha){
+        return 1
+      }
+      return 0;
+    })
   })
-  .catch(err=> {throw new Error(err)})
+  .catch(err=> {throw new Error({error:err.codigo==undefined?400: err.codigo, message:err.message})})
 }
 
 async function SetMealRegisterAPI({apiKey,id, idAlimento,cantidad,fecha}){

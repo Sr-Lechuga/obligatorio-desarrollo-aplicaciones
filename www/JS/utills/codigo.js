@@ -10,7 +10,7 @@ async function Inicializar() {
     document.querySelector("#ruteo").push("/ListadoRegistrosAlimenticios");
     HandleGUIMenuOnLogin();
     if(localStorage.getItem("alimentos") === undefined){
-      localStorage.setItem("alimentos",JSON.stringify(await getFoodAPI(JSON.parse(localStorage.getItem("loggedUser")))))
+      localStorage.setItem("alimentos",JSON.stringify(await getFoodAPI(JSON.parse(localStorage.getItem("loggedUser")))));
     }
   } else {
     //Offline
@@ -20,6 +20,16 @@ async function Inicializar() {
   }
 }
 
+function ValidateUserLogged(){
+  if(localStorage.getItem("loggedUser") == null){
+    //Agregar modal que avise usuario no logueado
+    document.querySelector("#ruteo").push("/Login");
+  }
+  if(JSON.parse(localStorage.getItem("loggedUser")).apiKey == undefined || JSON.parse(localStorage.getItem("loggedUser")).id == undefined){
+    //Agregar modal que avise usuario no logueado
+    document.querySelector("#ruteo").push("/Login");
+  }
+}
 
 function OcultarPantallas() {
   let screens = document.querySelectorAll("ion-page");
@@ -56,6 +66,7 @@ function Navegar(event) {
       document.querySelector("#registro").style.display = "block";
       break;
     case "/ListadoRegistrosAlimenticios":
+      HandleGUIOnLoadFoodRegisterList();
       document.querySelector("#listadoRegistrosAlimenticios").style.display = "block";
       break;
     case "/AgregarRegistroAlimenticio":
@@ -290,7 +301,72 @@ function HandleGUIOnRegisterFood(responseData){
   document.querySelector("#registerFoodMessage").innerHTML = responseData.mensaje;
   document.querySelector("#selectFood").value = "0";
   document.querySelector("#txtFoodAmount").value = "";
-}  
+}
+
+// -------------------------------------------------------- Register food
+async function HandleGUIOnLoadFoodRegisterList(){
+  ValidateUserLogged();
+
+  //DEvulve los registros para un usuario ordenados por fecha descendientemente
+  const registros = await getMealsRegistersAPI(JSON.parse(localStorage.getItem("loggedUser")));
+  //Usado para agrupar los elementos por cada fecha diferente
+  const groupedRegisters = [];
+  registros.forEach(registro => {
+    let alimento = JSON.parse(localStorage.getItem("alimentos")).find(alimento=>alimento.id==registro.idAlimento);
+    registro.imageURL = `${baseURLImage}${alimento.imagen}.png`;
+    registro.nombreAlimento = alimento.nombre;
+    registro.unidadAlimento = alimento.porcion.charAt(alimento.porcion.length-1)
+    //Buscar en la lista de agrupamientos con llave la fecha del registro. Devuleve undefined si no la encuentra
+    const objfinded = groupedRegisters.find(registers => registers[registro.fecha] ? registers[registro.fecha][0].fecha==registro.fecha : undefined)
+    //Si no hay grupos para la fecha del registro, crea uno uno nuevo
+    if(objfinded===undefined){
+      const obj = {}
+      obj[registro.fecha]=[registro]
+      groupedRegisters.push(obj)
+    }else{
+      //Si ya haabia un grupo para esa fecha, agrega el registo a ese grupo
+      objfinded[registro.fecha].push(registro);
+    }
+  });
+  console.log(groupedRegisters);
+  //Crear elementos segun registros
+  let elementos = "";
+  groupedRegisters.forEach(groupRegister =>{
+    const llavesobj = Object.keys(groupRegister);
+    elementos += `<ion-card color="light">
+    <ion-card-header>
+      <ion-card-title>Alimentos</ion-card-title>
+      <ion-card-subtitle>${llavesobj[0]}</ion-card-subtitle>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-list>`;
+    groupRegister[llavesobj[0]].forEach(registro=>{
+      let templatecard = CreateRegisterFoodItem(registro);
+      elementos += templatecard;
+    });
+    elementos+= `</ion-list>
+      </ion-card-content>
+    </ion-card>`
+  })
+  //Mostrar elementos
+  document.querySelector("#listado").innerHTML = elementos;
+}
+
+function CreateRegisterFoodItem({nombreAlimento,unidadAlimento,imageURL,cantidad,id}){
+  return `
+      <ion-item>
+        <ion-thumbnail slot="start">
+          <img alt="Silhouette of mountains" src="${imageURL}" />
+        </ion-thumbnail>
+        <ion-label>
+          <h2>${nombreAlimento}(${unidadAlimento})</h2>
+          <p>${cantidad}${unidadAlimento}</p>
+        </ion-label>
+        <ion-button slot="end" color="danger" idRegistro="${id}"> Delete </ion-button>
+      </ion-item>
+    `
+}
+
 
 // -------------------------------------------------------- Log out
 function LogOut(){

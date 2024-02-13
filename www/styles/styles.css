@@ -1,0 +1,9 @@
+#listadoRegistrosAlimenticios{
+  background-color: red;
+}
+
+
+ion-thumbnail img{
+  object-fit: none;
+  transform: scale(1.6);
+}
