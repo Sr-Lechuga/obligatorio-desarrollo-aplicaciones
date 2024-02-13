@@ -20,12 +20,6 @@ async function Inicializar() {
   }
 }
 
-function LogOut(){
-  CerrarMenu();
-  LogOutAPI();
-  HandleGUIMenuOnLogOut();
-  document.querySelector("#ruteo").push("/");
-}
 
 function OcultarPantallas() {
   let screens = document.querySelectorAll("ion-page");
@@ -48,7 +42,6 @@ function CerrarMenu() {
 }
 
 function Navegar(event) {
-  console.log(event);
   OcultarPantallas();
   switch (event.detail.to) {
     case "/":
@@ -63,7 +56,6 @@ function Navegar(event) {
       document.querySelector("#registro").style.display = "block";
       break;
     case "/ListadoRegistrosAlimenticios":
-      ObtenerProductos();
       document.querySelector("#listadoRegistrosAlimenticios").style.display = "block";
       break;
     case "/AgregarRegistroAlimenticio":
@@ -76,6 +68,7 @@ function Navegar(event) {
   }
 }
 
+// -------------------------------------------------------- Menu
 function HandleGUIMenuOnLogin(){
   document.querySelector("ion-item[href='/LogOut']").style.display = "block";
   document.querySelector("ion-item[href='/Registro']").style.display = "none";
@@ -94,14 +87,7 @@ function HandleGUIMenuOnLogOut(){
   document.querySelector("ion-item[href='/Mapa']").style.display = "none";
 }
 
-// Función para manejar la interfaz de usuario
-function HandleUserGUIOnLogin() {
-    document.querySelector("#mensajeLogin").innerHTML = "Inicio de sesión correcto";
-    document.querySelector("#txtLoginEmail").value = "";
-    document.querySelector("#txtLoginPassword").value = "";
-    HandleGUIMenuOnLogin();
-}
-
+// -------------------------------------------------------- Login
 function GetLoginCredentialsFromGUI() {
   const email = document.querySelector("#txtLoginEmail").value;
   const password = document.querySelector("#txtLoginPassword").value;
@@ -132,12 +118,33 @@ async function Login() {
     }
     localStorage.setItem("loggedUser", JSON.stringify(responseData));
     localStorage.setItem("alimentos",JSON.stringify(await getFoodAPI(responseData)))
-    HandleUserGUIOnLogin();
-    setTimeout(()=>{
-      document.querySelector("#ruteo").push("/");
-    },2000);
+    HandleGUIOnLogin();
+    document.querySelector("#ruteo").push("/");
   } catch (error) {
       document.querySelector("#mensajeLogin").innerHTML = error.message;
+  }
+}
+
+// Función para manejar la interfaz de usuario luego del inicio de sesion
+function HandleGUIOnLogin() {
+  document.querySelector("#mensajeLogin").innerHTML = "Inicio de sesión correcto";
+  document.querySelector("#txtLoginEmail").value = "";
+  document.querySelector("#txtLoginPassword").value = "";
+  HandleGUIMenuOnLogin();
+}
+
+// -------------------------------------------------------- Register
+// Función para manejar la interfaz de usuario antes del registro
+async function HandleGUIOnLoadRegister(){
+  try{
+    const paises = await getCountriesAPI();
+    let options = `<ion-select-option value="0">Seleccione un pais</ion-select-option>`;
+    paises.forEach( pais => {
+      options += ` <ion-select-option value="${pais.id}">${pais.name}</ion-select-option>`
+    });
+    document.querySelector("#selectRegisterCountry").innerHTML = options;
+  } catch(error){
+    document.querySelector("#registerMessage").innerHTML = error.message;
   }
 }
 
@@ -182,34 +189,6 @@ console.log(country);
   });
 }
 
-async function HandleGUIOnLoadRegister(){
-  try{
-    const paises = await getCountriesAPI();
-    let options = `<ion-select-option value="0">Seleccione un pais</ion-select-option>`;
-    paises.forEach( pais => {
-      options += ` <ion-select-option value="${pais.id}">${pais.name}</ion-select-option>`
-    });
-    document.querySelector("#selectRegisterCountry").innerHTML = options;
-  } catch(error){
-    document.querySelector("#registerMessage").innerHTML = error.message;
-  }
-}
-
-function HandleGUIOnRegister() {
-    CleanRegisterFields();
-    document.querySelector("#registerMessage").innerHTML = "Registro exitoso";
-    //Para auto log-in
-    HandleGUIMenuOnLogin();
-}
-
-function CleanRegisterFields() {
-  document.querySelector("#txtRegisterEmail").value = "";
-  document.querySelector("#txtRegisterPassword").value = "";
-  document.querySelector("#txtRegisterCheckPassword").value = "";
-  document.querySelector("#txtRegisterCountry").value = "";
-  document.querySelector("#txtRegisterCalories").value = "";
-}
-
 async function Register() {
   try {
     const registerData = GetRegisterDataFromGUI();
@@ -228,7 +207,24 @@ async function Register() {
   }
 }
 
- function HandleGUIOnLoadRegisterFood(){
+// Función para manejar la interfaz de usuario luego del registro
+function HandleGUIOnRegister() {
+    CleanRegisterFields();
+    document.querySelector("#registerMessage").innerHTML = "Registro exitoso";
+    //Para auto log-in
+    HandleGUIMenuOnLogin();
+}
+
+function CleanRegisterFields() {
+  document.querySelector("#txtRegisterEmail").value = "";
+  document.querySelector("#txtRegisterPassword").value = "";
+  document.querySelector("#txtRegisterCheckPassword").value = "";
+  document.querySelector("#txtRegisterCountry").value = "";
+  document.querySelector("#txtRegisterCalories").value = "";
+}
+
+// -------------------------------------------------------- Register food
+function HandleGUIOnLoadRegisterFood(){
   try{
     const alimentos = JSON.parse(localStorage.getItem("alimentos"))
     let options = `<ion-select-option value="0">Seleccione un alimento</ion-select-option>`;
@@ -238,7 +234,6 @@ async function Register() {
     document.querySelector("#selectFood").innerHTML = options;
   } catch(error){
     document.querySelector("#registerFoodMessage").innerHTML = error.message;
-    // document.querySelector("#registerMessage").innerHTML = error.message;
   }
 }
 
@@ -249,24 +244,20 @@ function GetFoodDataFromGUI(){
   const idAlimento = document.querySelector("#selectFood").value;
   const foodAmount = document.querySelector("#txtFoodAmount").value;
   const dateRegisterFood = document.querySelector("#dateRegisterFood").value;
-  //TODAY
-  const d = new Date();
-  const day = d.getDate()
-  const month = d.getMonth() + 1
-  const year = d.getFullYear()
-  const splitDateRecover = dateRegisterFood.split("-");
-  //Validacion
   const findedFood = alimentos.find(alimento => alimento.id == idAlimento)
+ 
+  //Validacion
   if(findedFood === undefined){
     throw new Error("Seleccione un alimento valido");
   }
   if(parseInt(foodAmount)<=0){
-    throw new Error("la cantidad debe ser mayor a 0");
+    throw new Error("La cantidad debe ser mayor a 0");
   }
   if(foodAmount.charAt(foodAmount.length-1) !== findedFood.porcion.charAt(findedFood.porcion.length-1)){
-    throw new Error("las unidades debe ser igual");
+    throw new Error("Las unidades debe ser igual");
   }
-  if(splitDateRecover[0] > year || splitDateRecover[1] > month ||(splitDateRecover[1] == month && splitDateRecover[2]>day) ){
+  // Se necesita concatenar la hora para que no devuelva la fecha del dia anterior
+  if(new Date(dateRegisterFood.concat("T00:00:00")) > new Date()){
     throw new Error("Seleccione una fecha valida");
   }
   //Retorno condicional con credenciales
@@ -282,57 +273,29 @@ function GetFoodDataFromGUI(){
 async function RegisterFood(){
   try{
     const foodRegisterData = GetFoodDataFromGUI();
-    const responseData = await setMealRegisterAPI(foodRegisterData);
-    document.querySelector("#registerFoodMessage").innerHTML = responseData.mensaje;
+    const responseData = await SetMealRegisterAPI(foodRegisterData);
+    
+    if(responseData.error !== undefined){
+      throw new Error(`${responseData.message} (codigo de error: ${responseData.error})`);
+    }
+
+    //Es necesario pasar el parametro para poder visualizar el mensaje de exito
+    HandleGUIOnRegisterFood(responseData);
   } catch(error){
     document.querySelector("#registerFoodMessage").innerHTML = error.message;
   }
 }
 
-function ObtenerProductos() {
-  if (
-    localStorage.getItem("token") != null &&
-    localStorage.getItem("token").trim().length > 0
-  ) {
-    fetch(baseURL + "/productos", {
-      headers: {
-        "Content-type": "application/json",
-        "x-auth": localStorage.getItem("token"),
-      },
-    })
-      .then(function (response) {
-        if (response.status == 401) {
-          return Promise.reject({
-            codigo: response.status,
-            message:
-              "Debes iniciar sesión para visualizar el listado de productos",
-          });
-        }
-        return response.json();
-      })
-      .then(function (datos) {
-        let datosProductosAPI = datos.data;
-        let datosProductos = "";
-        for (let i = 0; i < datosProductosAPI.length; i++) {
-          datosProductos += `<ion-card>`;
-          datosProductos += `<img alt="${datosProductosAPI[i].nombre}" 
-  src="${baseURLImage}${datosProductosAPI[i].urlImagen}.jpg" />`;
-          datosProductos += `<ion-card-header><ion-card-title>${datosProductosAPI[i].nombre}</ion-card-title>
-    </ion-card-header><ion-card-content>
-    <p>${datosProductosAPI[i].precio}</p>
-    <p>${datosProductosAPI[i].estado}</p>
-    <p>${datosProductosAPI[i].codigo}</p>
-    <p>${datosProductosAPI[i].etiquetas}</p>
-  </ion-card-content>
-</ion-card>`;
-        }
-        document.querySelector("#listado").innerHTML = datosProductos;
-      })
-      .catch(function (Error) {
-        document.querySelector("#listado").innerHTML = Error.message;
-      });
-  } else {
-    document.querySelector("#listado").innerHTML =
-      "Debes iniciar sesión para visualizar el listado de productos";
-  }
+function HandleGUIOnRegisterFood(responseData){
+  document.querySelector("#registerFoodMessage").innerHTML = responseData.mensaje;
+  document.querySelector("#selectFood").value = "0";
+  document.querySelector("#txtFoodAmount").value = "";
+}  
+
+// -------------------------------------------------------- Log out
+function LogOut(){
+  CerrarMenu();
+  LogOutAPI();
+  HandleGUIMenuOnLogOut();
+  document.querySelector("#ruteo").push("/Login");
 }

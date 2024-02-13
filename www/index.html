@@ -63,9 +63,8 @@
               >Agregar registro alimenticion</ion-item
             >
             <ion-item href="/Mapa" onclick="CerrarMenu()">Mapa</ion-item>
-            <ion-item href="/LogOut" onclick="LogOut()"
-              >Cerrar Sesion</ion-item
-            >
+            <ion-item href="/LogOut" id="logout" onclick="LogOut()">Cerrar Sesion</ion-item>
+            <ion-loading trigger="logout" message="¡Hasta la proxima!" duration="2000"></ion-loading>
           </ion-list>
         </ion-content>
       </ion-menu>
@@ -119,6 +118,7 @@
             id="txtLoginPassword"
           ></ion-input>
           <ion-button expand="block" id="btnLogin">Iniciar sesión</ion-button>
+          <ion-loading trigger="btnLogin" message="Ingresando..." duration="2000"></ion-loading>
           <p id="mensajeLogin"></p>
         </ion-content>
       </ion-page>
@@ -157,6 +157,7 @@
             type="number"
           ></ion-input>
           <ion-button expand="block" id="btnRegistro">Registrarse</ion-button>
+          <ion-loading trigger="btnRegistro" message="Estas a un paso..." duration="2000"></ion-loading>
           <p id="registerMessage"></p>
         </ion-content>
       </ion-page>
@@ -169,7 +170,158 @@
             <ion-title>Listado de registros alimenticios</ion-title>
           </ion-toolbar>
         </ion-header>
-        <ion-content id="listado"></ion-content>
+        <ion-content id="listado">
+          <ion-card color="light">
+            <ion-card-header>
+              <ion-card-title>Alimentos</ion-card-title>
+              <ion-card-subtitle>13 de Febrero del 2024</ion-card-subtitle>
+            </ion-card-header>
+            <ion-card-content>
+              <ion-list>
+                <ion-item>
+                  <ion-thumbnail slot="start">
+                    <img alt="Silhouette of mountains" src="https://ionicframework.com/docs/img/demos/thumbnail.svg" />
+                  </ion-thumbnail>
+                  <ion-label>
+                    <h2>Manzanzas (U)</h2>
+                    <p>10U</p>
+                  </ion-label>
+                  <ion-button slot="end" color="danger"> Delete </ion-button>
+                </ion-item>
+                <ion-item>
+                  <ion-thumbnail slot="start">
+                    <img alt="Silhouette of mountains" src="https://ionicframework.com/docs/img/demos/thumbnail.svg" />
+                  </ion-thumbnail>
+                  <ion-label>
+                    <h2>Tomates (U)</h2>
+                    <p>5U</p>
+                  </ion-label>
+                  <ion-button slot="end" color="danger"> Delete </ion-button>
+                </ion-item>
+                <ion-item>
+                  <ion-thumbnail slot="start">
+                    <img alt="Silhouette of mountains" src="https://ionicframework.com/docs/img/demos/thumbnail.svg" />
+                  </ion-thumbnail>
+                  <ion-label>
+                    <h2>Naranjas (U)</h2>
+                    <p>7U</p>
+                  </ion-label>
+                  <ion-button slot="end" color="danger"> Delete </ion-button>
+                </ion-item>
+                <ion-item lines="none">
+                  <ion-thumbnail slot="start">
+                    <img alt="Silhouette of mountains" src="https://ionicframework.com/docs/img/demos/thumbnail.svg" />
+                  </ion-thumbnail>
+                  <ion-label>
+                    <h2>Arroz (g)</h2>
+                    <p>350g</p>
+                  </ion-label>
+                  <ion-button slot="end" color="danger"> Delete </ion-button>
+                </ion-item>
+              </ion-list>
+            </ion-card-content>
+          </ion-card>
+          <ion-card color="light">
+            <ion-card-header>
+              <ion-card-title>Alimentos</ion-card-title>
+              <ion-card-subtitle>12 de Febrero del 2024</ion-card-subtitle>
+            </ion-card-header>
+            <ion-card-content>
+              <ion-list>
+                <ion-item>
+                  <ion-thumbnail slot="start">
+                    <img alt="Silhouette of mountains" src="https://ionicframework.com/docs/img/demos/thumbnail.svg" />
+                  </ion-thumbnail>
+                  <ion-label>
+                    <h2>Manzanzas (U)</h2>
+                    <p>6U</p>
+                  </ion-label>
+                  <ion-button slot="end" color="danger"> Delete </ion-button>
+                </ion-item>
+                <ion-item>
+                  <ion-thumbnail slot="start">
+                    <img alt="Silhouette of mountains" src="https://ionicframework.com/docs/img/demos/thumbnail.svg" />
+                  </ion-thumbnail>
+                  <ion-label>
+                    <h2>Tomates (U)</h2>
+                    <p>4U</p>
+                  </ion-label>
+                  <ion-button slot="end" color="danger"> Delete </ion-button>
+                </ion-item>
+                <ion-item>
+                  <ion-thumbnail slot="start">
+                    <img alt="Silhouette of mountains" src="https://ionicframework.com/docs/img/demos/thumbnail.svg" />
+                  </ion-thumbnail>
+                  <ion-label>
+                    <h2>Naranjas (U)</h2>
+                    <p>3U</p>
+                  </ion-label>
+                  <ion-button slot="end" color="danger"> Delete </ion-button>
+                </ion-item>
+                <ion-item lines="none">
+                  <ion-thumbnail slot="start">
+                    <img alt="Silhouette of mountains" src="https://ionicframework.com/docs/img/demos/thumbnail.svg" />
+                  </ion-thumbnail>
+                  <ion-label>
+                    <h2>Arroz (g)</h2>
+                    <p>300g</p>
+                  </ion-label>
+                  <ion-button slot="end" color="danger"> Delete </ion-button>
+                </ion-item>
+              </ion-list>
+            </ion-card-content>
+          </ion-card>
+          <ion-card color="light">
+            <ion-card-header>
+              <ion-card-title>Alimentos</ion-card-title>
+              <ion-card-subtitle>11 de Febrero del 2024</ion-card-subtitle>
+            </ion-card-header>
+            <ion-card-content>
+              <ion-list>
+                <ion-item>
+                  <ion-thumbnail slot="start">
+                    <img alt="Silhouette of mountains" src="https://ionicframework.com/docs/img/demos/thumbnail.svg" />
+                  </ion-thumbnail>
+                  <ion-label>
+                    <h2>Manzanzas (U)</h2>
+                    <p>6U</p>
+                  </ion-label>
+                  <ion-button slot="end" color="danger"> Delete </ion-button>
+                </ion-item>
+                <ion-item>
+                  <ion-thumbnail slot="start">
+                    <img alt="Silhouette of mountains" src="https://ionicframework.com/docs/img/demos/thumbnail.svg" />
+                  </ion-thumbnail>
+                  <ion-label>
+                    <h2>Tomates (U)</h2>
+                    <p>4U</p>
+                  </ion-label>
+                  <ion-button slot="end" color="danger"> Delete </ion-button>
+                </ion-item>
+                <ion-item>
+                  <ion-thumbnail slot="start">
+                    <img alt="Silhouette of mountains" src="https://ionicframework.com/docs/img/demos/thumbnail.svg" />
+                  </ion-thumbnail>
+                  <ion-label>
+                    <h2>Naranjas (U)</h2>
+                    <p>3U</p>
+                  </ion-label>
+                  <ion-button slot="end" color="danger"> Delete </ion-button>
+                </ion-item>
+                <ion-item lines="none">
+                  <ion-thumbnail slot="start">
+                    <img alt="Silhouette of mountains" src="https://ionicframework.com/docs/img/demos/thumbnail.svg" />
+                  </ion-thumbnail>
+                  <ion-label>
+                    <h2>Arroz (g)</h2>
+                    <p>300g</p>
+                  </ion-label>
+                  <ion-button slot="end" color="danger"> Delete </ion-button>
+                </ion-item>
+              </ion-list>
+            </ion-card-content>
+          </ion-card>
+        </ion-content>
       </ion-page>
       <ion-page id="agregarRegistroAlimenticio" class="ion-page">
         <ion-header>
@@ -177,7 +329,7 @@
             <ion-buttons slot="start">
               <ion-menu-button></ion-menu-button>
             </ion-buttons>
-            <ion-title>Registro de alimento</ion-title>
+            <ion-title>Registro de alimentos</ion-title>
           </ion-toolbar>
         </ion-header>
         <ion-content>

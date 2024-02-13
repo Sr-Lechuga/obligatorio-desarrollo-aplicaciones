@@ -173,7 +173,7 @@ function getMealsRegistersAPI({apiKey,id}){
   .catch(err=> {throw new Error(err)})
 }
 
-async function setMealRegisterAPI({apiKey,id, idAlimento,cantidad,fecha}){
+async function SetMealRegisterAPI({apiKey,id, idAlimento,cantidad,fecha}){
   return fetch(`${baseURL}/registros.php`,{
     method:"POST",
     headers:{
@@ -199,10 +199,14 @@ async function setMealRegisterAPI({apiKey,id, idAlimento,cantidad,fecha}){
     return response.json();
   })
   .then(data => {
-    console.log(data);
     return data
   })
-  .catch(err=> {throw new Error(err)})
+  .catch(error => {
+    return {
+      error: error.codigo != undefined ? error.codigo : 400,
+      message: error.message
+    }
+  });
 }
 
 function deleteMealRegisterAPI({apiKey,id,registerId}){
