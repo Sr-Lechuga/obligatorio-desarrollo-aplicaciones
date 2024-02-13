@@ -186,12 +186,13 @@
             </ion-select>
           </ion-item>
           <ion-input
+            type="text"
             placeholder="Ingrese la cantidad"
             id="txtFoodAmount"
           ></ion-input>
-          <ion-datetime presentation="date" value="2024-02-12" min="2003-03-10" max="2024-02-13"></ion-datetime>
+          <ion-datetime id="dateRegisterFood" presentation="date" value="2024-02-12" min="2003-03-10" max="2024-02-13"></ion-datetime>
           <ion-button expand="block" id="btnRegisterFood">Registrar alimento</ion-button>
-          <p id="registerMessage"></p>
+          <p id="registerFoodMessage"></p>
         </ion-content>
       </ion-page>
     </ion-app>

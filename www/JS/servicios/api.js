@@ -173,8 +173,8 @@ function getMealsRegistersAPI({apiKey,id}){
   .catch(err=> {throw new Error(err)})
 }
 
-function setMealRegisterAPI({apiKey,id, idAlimento, cantidad,fecha}){
-  fetch(`${baseURL}/registros.php`,{
+async function setMealRegisterAPI({apiKey,id, idAlimento,cantidad,fecha}){
+  return fetch(`${baseURL}/registros.php`,{
     method:"POST",
     headers:{
     "Content-Type":"application/json",

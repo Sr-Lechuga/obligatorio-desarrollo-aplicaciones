@@ -5,7 +5,6 @@ async function Inicializar() {
   token = JSON.parse(localStorage.getItem("loggedUser")) ? JSON.parse(localStorage.getItem("loggedUser")).apiKey : "";
   OcultarPantallas();
   AgregarEventos();
-  HandleGUIOnLoadRegister();
   if ( token !== undefined && token.trim().length > 0 ) {
     //Logged
     document.querySelector("#ruteo").push("/ListadoRegistrosAlimenticios");
@@ -15,6 +14,7 @@ async function Inicializar() {
     }
   } else {
     //Offline
+    HandleGUIOnLoadRegister();
     document.querySelector("#ruteo").push("/Login");
     HandleGUIMenuOnLogOut();
   }
@@ -40,6 +40,7 @@ function AgregarEventos() {
     .addEventListener("ionRouteWillChange", Navegar);
   document.querySelector("#btnLogin").addEventListener("click", Login);
   document.querySelector("#btnRegistro").addEventListener("click", Register);
+  document.querySelector("#btnRegisterFood").addEventListener("click", RegisterFood);
 }
 
 function CerrarMenu() {
@@ -65,10 +66,10 @@ function Navegar(event) {
       ObtenerProductos();
       document.querySelector("#listadoRegistrosAlimenticios").style.display = "block";
       break;
-      case "/AgregarRegistroAlimenticio":
-        RegisterFood();
-        document.querySelector("#agregarRegistroAlimenticio").style.display = "block";
-        break;
+    case "/AgregarRegistroAlimenticio":
+      HandleGUIOnLoadRegisterFood();
+      document.querySelector("#agregarRegistroAlimenticio").style.display = "block";
+      break;
     default:
       document.querySelector("#incio").style.display = "block";
       break;
@@ -194,25 +195,6 @@ async function HandleGUIOnLoadRegister(){
   }
 }
 
- function HandleGUIOnLoadRegisterFood(){
-  try{
-    const alimentos = JSON.parse(localStorage.getItem("alimentos"))
-    let options = `<ion-select-option value="0">Seleccione un alimento</ion-select-option>`;
-    alimentos.forEach( alimento => {
-      options += ` <ion-select-option value="${alimento.id}">${alimento.nombre} (${alimento.porcion.charAt(alimento.porcion.length-1)})</ion-select-option>`
-    });
-    document.querySelector("#selectFood").innerHTML = options;
-  } catch(error){
-    alert(error.message);
-    // document.querySelector("#registerMessage").innerHTML = error.message;
-  }
-}
-
-function RegisterFood(){
-  HandleGUIOnLoadRegisterFood();
-}
-
-
 function HandleGUIOnRegister() {
     CleanRegisterFields();
     document.querySelector("#registerMessage").innerHTML = "Registro exitoso";
@@ -243,6 +225,67 @@ async function Register() {
     },2000);
   } catch (error) {
     document.querySelector("#registerMessage").innerHTML = error.message;
+  }
+}
+
+ function HandleGUIOnLoadRegisterFood(){
+  try{
+    const alimentos = JSON.parse(localStorage.getItem("alimentos"))
+    let options = `<ion-select-option value="0">Seleccione un alimento</ion-select-option>`;
+    alimentos.forEach( alimento => {
+      options += ` <ion-select-option value="${alimento.id}">${alimento.nombre} (${alimento.porcion.charAt(alimento.porcion.length-1)})</ion-select-option>`
+    });
+    document.querySelector("#selectFood").innerHTML = options;
+  } catch(error){
+    document.querySelector("#registerFoodMessage").innerHTML = error.message;
+    // document.querySelector("#registerMessage").innerHTML = error.message;
+  }
+}
+
+function GetFoodDataFromGUI(){
+  //Toma de info
+  const alimentos = JSON.parse(localStorage.getItem("alimentos"))
+  const {apiKey,id} = JSON.parse(localStorage.getItem("loggedUser"))
+  const idAlimento = document.querySelector("#selectFood").value;
+  const foodAmount = document.querySelector("#txtFoodAmount").value;
+  const dateRegisterFood = document.querySelector("#dateRegisterFood").value;
+  //TODAY
+  const d = new Date();
+  const day = d.getDate()
+  const month = d.getMonth() + 1
+  const year = d.getFullYear()
+  const splitDateRecover = dateRegisterFood.split("-");
+  //Validacion
+  const findedFood = alimentos.find(alimento => alimento.id == idAlimento)
+  if(findedFood === undefined){
+    throw new Error("Seleccione un alimento valido");
+  }
+  if(parseInt(foodAmount)<=0){
+    throw new Error("la cantidad debe ser mayor a 0");
+  }
+  if(foodAmount.charAt(foodAmount.length-1) !== findedFood.porcion.charAt(findedFood.porcion.length-1)){
+    throw new Error("las unidades debe ser igual");
+  }
+  if(splitDateRecover[0] > year || splitDateRecover[1] > month ||(splitDateRecover[1] == month && splitDateRecover[2]>day) ){
+    throw new Error("Seleccione una fecha valida");
+  }
+  //Retorno condicional con credenciales
+  return {
+    apiKey:apiKey,
+    "idAlimento": idAlimento,
+    "id": id,
+    "cantidad": foodAmount,
+    "fecha": dateRegisterFood,
+  }
+}
+
+async function RegisterFood(){
+  try{
+    const foodRegisterData = GetFoodDataFromGUI();
+    const responseData = await setMealRegisterAPI(foodRegisterData);
+    document.querySelector("#registerFoodMessage").innerHTML = responseData.mensaje;
+  } catch(error){
+    document.querySelector("#registerFoodMessage").innerHTML = error.message;
   }
 }
 
