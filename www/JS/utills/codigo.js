@@ -20,6 +20,12 @@ async function Inicializar() {
   }
 }
 
+function ShowResultMessage(id,message,duration = 2000){
+  document.querySelector(`#${id}`).duration = duration;
+  document.querySelector(`#${id}`).message = message;
+  document.querySelector(`#${id}`).present();
+}
+
 function ValidateUserLogged(){
   if(localStorage.getItem("loggedUser") == null){
     //Agregar modal que avise usuario no logueado
@@ -37,6 +43,7 @@ function OcultarPantallas() {
     screen.style.display = 'none';
   })
 }
+
 
 function AgregarEventos() {
   document
@@ -306,68 +313,95 @@ function HandleGUIOnRegisterFood(responseData){
 // -------------------------------------------------------- Register food
 async function HandleGUIOnLoadFoodRegisterList(){
   ValidateUserLogged();
-
-  //DEvulve los registros para un usuario ordenados por fecha descendientemente
-  const registros = await getMealsRegistersAPI(JSON.parse(localStorage.getItem("loggedUser")));
-  //Usado para agrupar los elementos por cada fecha diferente
-  const groupedRegisters = [];
-  registros.forEach(registro => {
-    let alimento = JSON.parse(localStorage.getItem("alimentos")).find(alimento=>alimento.id==registro.idAlimento);
-    registro.imageURL = `${baseURLImage}${alimento.imagen}.png`;
-    registro.nombreAlimento = alimento.nombre;
-    registro.unidadAlimento = alimento.porcion.charAt(alimento.porcion.length-1)
-    //Buscar en la lista de agrupamientos con llave la fecha del registro. Devuleve undefined si no la encuentra
-    const objfinded = groupedRegisters.find(registers => registers[registro.fecha] ? registers[registro.fecha][0].fecha==registro.fecha : undefined)
-    //Si no hay grupos para la fecha del registro, crea uno uno nuevo
-    if(objfinded===undefined){
-      const obj = {}
-      obj[registro.fecha]=[registro]
-      groupedRegisters.push(obj)
-    }else{
-      //Si ya haabia un grupo para esa fecha, agrega el registo a ese grupo
-      objfinded[registro.fecha].push(registro);
-    }
-  });
-  console.log(groupedRegisters);
-  //Crear elementos segun registros
-  let elementos = "";
-  groupedRegisters.forEach(groupRegister =>{
-    const llavesobj = Object.keys(groupRegister);
-    elementos += `<ion-card color="light">
-    <ion-card-header>
-      <ion-card-title>Alimentos</ion-card-title>
-      <ion-card-subtitle>${llavesobj[0]}</ion-card-subtitle>
-    </ion-card-header>
-    <ion-card-content>
-      <ion-list>`;
-    groupRegister[llavesobj[0]].forEach(registro=>{
-      let templatecard = CreateRegisterFoodItem(registro);
-      elementos += templatecard;
+  try{
+    //DEvulve los registros para un usuario ordenados por fecha descendientemente
+    const registros = await getMealsRegistersAPI(JSON.parse(localStorage.getItem("loggedUser")));
+    //Usado para agrupar los elementos por cada fecha diferente
+    const groupedRegisters = [];
+    registros.forEach(registro => {
+      let alimento = JSON.parse(localStorage.getItem("alimentos")).find(alimento=>alimento.id==registro.idAlimento);
+      registro.imageURL = `${baseURLImage}${alimento.imagen}.png`;
+      registro.nombreAlimento = alimento.nombre;
+      registro.unidadAlimento = alimento.porcion.charAt(alimento.porcion.length-1)
+      registro.caloriasConsumidas = registro.cantidad*alimento.calorias/parseInt(alimento.porcion)
+      //Buscar en la lista de agrupamientos con llave la fecha del registro. Devuleve undefined si no la encuentra
+      const objfinded = groupedRegisters.find(registers => registers[registro.fecha] ? registers[registro.fecha][0].fecha==registro.fecha : undefined)
+      //Si no hay grupos para la fecha del registro, crea uno uno nuevo
+      if(objfinded===undefined){
+        const obj = {}
+        obj[registro.fecha]=[registro]
+        groupedRegisters.push(obj)
+      }else{
+        //Si ya haabia un grupo para esa fecha, agrega el registo a ese grupo
+        objfinded[registro.fecha].push(registro);
+      }
     });
-    elementos+= `</ion-list>
-      </ion-card-content>
-    </ion-card>`
-  })
-  //Mostrar elementos
-  document.querySelector("#listado").innerHTML = elementos;
+    //Crear elementos segun registros
+    let elementos = ``;
+    groupedRegisters.forEach(groupRegister =>{
+      const llavesobj = Object.keys(groupRegister);
+      elementos += `<ion-card color="light">
+      <ion-card-header>
+        <ion-card-title>Alimentos</ion-card-title>
+        <ion-card-subtitle>${llavesobj[0]}</ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-list>`;
+      groupRegister[llavesobj[0]].forEach(registro=>{
+        let templatecard = CreateRegisterFoodItem(registro);
+        elementos += templatecard;
+      });
+      elementos+= `</ion-list>
+        </ion-card-content>
+      </ion-card>`
+    })
+    //Mostrar elementos
+    document.querySelector("#showList").innerHTML = elementos;
+  }catch(error){
+    ShowResultMessage("foodRegisterMsg","No se pudieron cargar los registros");
+    console.log(error);
+  }
 }
 
-function CreateRegisterFoodItem({nombreAlimento,unidadAlimento,imageURL,cantidad,id}){
+function CreateRegisterFoodItem({nombreAlimento,unidadAlimento,imageURL,cantidad,id,caloriasConsumidas}){
   return `
-      <ion-item>
+      <ion-item id="food-${id}">
         <ion-thumbnail slot="start">
           <img alt="Silhouette of mountains" src="${imageURL}" />
         </ion-thumbnail>
         <ion-label>
-          <h2>${nombreAlimento}(${unidadAlimento})</h2>
+          <h2>${nombreAlimento} (${unidadAlimento})</h2>
           <p>${cantidad}${unidadAlimento}</p>
+          <p>Calorias consumidas: ${caloriasConsumidas} cal</p>
         </ion-label>
-        <ion-button slot="end" color="danger" idRegistro="${id}"> Delete </ion-button>
+        <ion-button slot="end" color="danger" onClick="DeleteRegister(${id})" > Delete </ion-button>
       </ion-item>
     `
 }
 
+// -------------------------------------------------------- Register food
 
+function HideFoodRegisterOnClick(idRegisterFood){
+  ShowResultMessage("foodRegisterMsg","Eliminando...");
+  document.querySelector(`#food-${idRegisterFood}`).style.display = 'none';
+}
+
+async function DeleteRegister(idRegisterFood){
+  ValidateUserLogged();
+  let requestObject = JSON.parse(localStorage.getItem("loggedUser"));
+  requestObject.registerId = idRegisterFood;
+  try{
+    HideFoodRegisterOnClick(idRegisterFood);
+    const response = await deleteMealRegisterAPI(requestObject);
+    if(response.codigo == 200){
+      ShowResultMessage("foodRegisterMsg","¡Se elimino el registro con exito!");
+    }
+  }catch(error){
+    ShowResultMessage("foodRegisterMsg","No se pudo eliminar el registo");
+    document.querySelector(`#food-${idRegisterFood}`).style.display = 'block';
+    console.log(error);
+  }
+}
 // -------------------------------------------------------- Log out
 function LogOut(){
   CerrarMenu();

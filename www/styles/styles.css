@@ -1,9 +1,13 @@
-#listadoRegistrosAlimenticios{
-  background-color: red;
-}
-
 
 ion-thumbnail img{
   object-fit: none;
   transform: scale(1.6);
+}
+
+ion-page #listadoRegistrosAlimenticios{
+  background-color: aquamarine;
+}
+
+.date-picker-header{
+  text-align: center;
 }

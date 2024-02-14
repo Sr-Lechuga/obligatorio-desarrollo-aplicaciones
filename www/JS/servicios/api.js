@@ -217,8 +217,8 @@ async function SetMealRegisterAPI({apiKey,id, idAlimento,cantidad,fecha}){
   });
 }
 
-function deleteMealRegisterAPI({apiKey,id,registerId}){
-  fetch(`${baseURL}/registros.php?idRegistro=${registerId}`,{
+async function deleteMealRegisterAPI({apiKey,id,registerId}){
+  return fetch(`${baseURL}/registros.php?idRegistro=${registerId}`,{
     method:"DELETE",
     headers:{
     "Content-Type":"application/json",
@@ -236,10 +236,9 @@ function deleteMealRegisterAPI({apiKey,id,registerId}){
     return response.json();
   })
   .then(data => {
-    console.log(data);
     return data
   })
-  .catch(err=> {throw new Error(err)})
+  .catch(err=> {throw new Error({error: err.codigo == undefined ? 400 : err.codigo, message: err.message})})
 }
 
 async function getFoodAPI({apiKey,id}){

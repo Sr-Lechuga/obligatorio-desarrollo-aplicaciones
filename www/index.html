@@ -21,14 +21,8 @@
     <script src="JS/servicios/api.js" defer></script>
     <!-- Modificador DOM -->
     <script src="JS/utills/codigo.js" defer></script>
-    <style rel="stylesheet" href="./styles/styles.css"></style>
     <!-- Custom style -->
-    <style>
-      ion-thumbnail img{
-        object-fit: none;
-        transform: scale(1.6);
-      }
-    </style>
+    <link rel="stylesheet" href="./styles/styles.css"></link>
     <title>Registro de alimentos</title>
   </head>
   <body>
@@ -73,7 +67,7 @@
             >
             <ion-item href="/Mapa" onclick="CerrarMenu()">Mapa</ion-item>
             <ion-item href="/LogOut" id="logout" onclick="LogOut()">Cerrar Sesion</ion-item>
-            <ion-loading trigger="logout" message="¡Hasta la proxima!" duration="2000"></ion-loading>
+            <ion-loading trigger="logout" message="¡Hasta la proxima!" duration="2000" id="este"></ion-loading>
           </ion-list>
         </ion-content>
       </ion-menu>
@@ -180,7 +174,39 @@
           </ion-toolbar>
         </ion-header>
         <ion-content id="listado">
+          <ion-grid fixed="true">
+            <ion-row>
+              <ion-col class="date-picker-header"><h3>Inicio</h3></ion-col>
+            </ion-row>
+            <ion-row>
+              <ion-col>
+                <ion-datetime-button datetime="datetime-start"></ion-datetime-button>
+                <ion-modal>
+                  <ion-datetime presentation="date" id="datetime-start"></ion-datetime>
+                </ion-modal>
+              </ion-col>
+            </ion-row>
+            <ion-row>
+              <ion-col class="date-picker-header"><h3>Fin</h3></ion-col>
+            </ion-row>
+            <ion-row>
+              <ion-col>
+                <ion-datetime-button datetime="datetime-end"></ion-datetime-button>
+                <ion-modal>
+                  <ion-datetime
+                    presentation="date"
+                    id="datetime-end"
+                    value="2024-03-10"
+                  ></ion-datetime>
+                </ion-modal>
+              </ion-col>
+            </ion-row>
+            <ion-row>
+              <ion-col id="showList"></ion-col>
+            </ion-row>
+          </ion-grid>
         </ion-content>
+        <ion-loading id="deleteListFoodRegistersMsg"></ion-loading>
       </ion-page>
       <ion-page id="agregarRegistroAlimenticio" class="ion-page">
         <ion-header>
@@ -205,6 +231,7 @@
           <ion-button expand="block" id="btnRegisterFood">Registrar alimento</ion-button>
           <p id="registerFoodMessage"></p>
         </ion-content>
+        <ion-loading id="foodRegisterMsg"></ion-loading>
       </ion-page>
     </ion-app>
   </body>
