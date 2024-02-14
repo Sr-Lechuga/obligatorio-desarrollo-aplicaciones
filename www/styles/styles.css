@@ -1,3 +1,16 @@
+#logout{
+  color: red;
+  font-weight: 500;
+}
+
+.center-content{
+  display: flex;
+  justify-content: center;
+}
+
+#txtFoodAmount{
+  width: 50%;
+}
 
 ion-thumbnail img{
   object-fit: none;

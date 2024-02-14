@@ -108,21 +108,39 @@
           </ion-toolbar>
         </ion-header>
         <ion-content>
-          <ion-input
-            label="Email"
-            placeholder="Ingrese su email"
-            id="txtLoginEmail"
-            type="email"
-          ></ion-input>
-          <ion-input
-            label="Password"
-            placeholder="Ingrese password"
-            type="password"
-            id="txtLoginPassword"
-          ></ion-input>
-          <ion-button expand="block" id="btnLogin">Iniciar sesión</ion-button>
+          <ion-grid fixed="true">
+            <ion-row>
+              <ion-col>
+                <ion-input
+                  label="Email"
+                  placeholder="Ingrese su email"
+                  id="txtLoginEmail"
+                  type="email"
+                ></ion-input>
+              </ion-col>
+            </ion-row>
+            <ion-row>
+              <ion-col>
+                <ion-input
+                  label="Password"
+                  placeholder="Ingrese password"
+                  type="password"
+                  id="txtLoginPassword"
+                ></ion-input>
+              </ion-col>
+            </ion-row>
+            <ion-row>
+              <ion-col>
+                <ion-button expand="block" id="btnLogin">Iniciar sesión</ion-button>
+              </ion-col>
+            </ion-row>
+            <ion-row>
+              <ion-col>
+                <p id="mensajeLogin"></p>
+              </ion-col>
+            </ion-row>
+          </ion-grid>
           <ion-loading trigger="btnLogin" message="Ingresando..." duration="2000"></ion-loading>
-          <p id="mensajeLogin"></p>
         </ion-content>
       </ion-page>
       <ion-page id="registro" class="ion-page">
@@ -135,34 +153,64 @@
           </ion-toolbar>
         </ion-header>
         <ion-content>
-          <ion-input
-            placeholder="Ingrese su email"
-            id="txtRegisterEmail"
-            type="email"
-          ></ion-input>
-          <ion-input
-            placeholder="Ingrese su contraseña"
-            id="txtRegisterPassword"
-            type="password"
-          ></ion-input>
-          <ion-input
-            placeholder="Ingrese su contraseña nuevamente"
-            id="txtRegisterCheckPassword"
-            type="password"
-          ></ion-input>
-          <ion-item>
-            <ion-select id="selectRegisterCountry" value="0" placeholder="Pais">
-            </ion-select>
-          </ion-item>
-          <ion-input
-            placeholder="Ingrese su meta de calorias diarias"
-            id="txtRegisterCalories"
-            type="number"
-          ></ion-input>
-          <ion-button expand="block" id="btnRegistro">Registrarse</ion-button>
-          <ion-loading trigger="btnRegistro" message="Estas a un paso..." duration="2000"></ion-loading>
-          <p id="registerMessage"></p>
+          <ion-grid fixed="true">
+            <ion-row>
+              <ion-col>
+                <ion-input
+                  placeholder="Ingrese su email"
+                  id="txtRegisterEmail"
+                  type="email"
+                ></ion-input>
+              </ion-col>
+            </ion-row>
+            <ion-row>
+              <ion-col>
+                <ion-input
+                  placeholder="Ingrese su contraseña"
+                  id="txtRegisterPassword"
+                  type="password"
+                ></ion-input>
+              </ion-col>
+            </ion-row>
+            <ion-row>
+              <ion-col>
+                <ion-input
+                  placeholder="Ingrese su contraseña nuevamente"
+                  id="txtRegisterCheckPassword"
+                  type="password"
+                ></ion-input>
+              </ion-col>
+            </ion-row>
+            <ion-row>
+              <ion-col>
+                <ion-item>
+                  <ion-select id="selectRegisterCountry" value="0" placeholder="Pais">
+                  </ion-select>
+                </ion-item>
+              </ion-col>
+            </ion-row>
+            <ion-row>
+              <ion-col>
+                <ion-input
+                  placeholder="Ingrese su meta de calorias diarias"
+                  id="txtRegisterCalories"
+                  type="number"
+                ></ion-input>
+              </ion-col>
+            </ion-row>
+            <ion-row>
+              <ion-col>
+                <ion-button expand="block" id="btnRegistro">Registrarse</ion-button>
+              </ion-col>
+            </ion-row>
+            <ion-row>
+              <ion-col>
+                <p id="registerMessage"></p>
+              </ion-col>
+            </ion-row>
+          </ion-grid>
         </ion-content>
+        <ion-loading trigger="btnRegistro" message="Estas a un paso..." duration="2000"></ion-loading>
       </ion-page>
       <ion-page id="listadoRegistrosAlimenticios" class="ion-page">
         <ion-header>
@@ -218,18 +266,39 @@
           </ion-toolbar>
         </ion-header>
         <ion-content>
-          <ion-item>
-            <ion-select id="selectFood" value="0" placeholder="Alimento">
-            </ion-select>
-          </ion-item>
-          <ion-input
-            type="text"
-            placeholder="Ingrese la cantidad"
-            id="txtFoodAmount"
-          ></ion-input>
-          <ion-datetime id="dateRegisterFood" presentation="date" value="2024-02-12" min="2003-03-10" max="2024-02-13"></ion-datetime>
-          <ion-button expand="block" id="btnRegisterFood">Registrar alimento</ion-button>
-          <p id="registerFoodMessage"></p>
+          <ion-grid fixed="true">
+            <ion-row>
+              <ion-col class="center-content">
+                <ion-item>
+                  <ion-select id="selectFood" value="0" placeholder="Alimento">
+                  </ion-select>
+                </ion-item>
+              </ion-col>
+            </ion-row>
+            <ion-row>
+              <ion-col class="center-content">
+                <ion-input
+                type="text"
+                label="Ingrese la cantidad"
+                id="txtFoodAmount"
+                ></ion-input>
+              </ion-col>
+            </ion-row>
+            <ion-row>
+              <ion-col class="center-content">
+                <ion-datetime id="dateRegisterFood" presentation="date" value="2024-02-12" min="2003-03-10" max="2024-02-13">
+                </ion-datetime>
+              </ion-col>
+            </ion-row>
+            <ion-row>
+              <ion-col class="center-content">
+                <ion-button expand="block" id="btnRegisterFood">Registrar alimento</ion-button>
+              </ion-col>
+            </ion-row>
+            <ion-row>
+              <ion-col class="center-content"><p id="registerFoodMessage"></p></ion-col>
+            </ion-row>
+          </ion-grid>
         </ion-content>
         <ion-loading id="foodRegisterMsg"></ion-loading>
       </ion-page>
