@@ -52,6 +52,8 @@ function AgregarEventos() {
   document.querySelector("#btnLogin").addEventListener("click", Login);
   document.querySelector("#btnRegistro").addEventListener("click", Register);
   document.querySelector("#btnRegisterFood").addEventListener("click", RegisterFood);
+  document.querySelector("#datetime-end").addEventListener("ionChange", FilterFoodRegistersList);
+  document.querySelector("#datetime-start").addEventListener("ionChange", FilterFoodRegistersList);
 }
 
 function CerrarMenu() {
@@ -137,7 +139,9 @@ async function Login() {
     localStorage.setItem("loggedUser", JSON.stringify(responseData));
     localStorage.setItem("alimentos",JSON.stringify(await getFoodAPI(responseData)))
     HandleGUIOnLogin();
+    await setMealsRegistered(true)
     document.querySelector("#ruteo").push("/");
+
   } catch (error) {
       document.querySelector("#mensajeLogin").innerHTML = error.message;
   }
@@ -249,6 +253,8 @@ function HandleGUIOnLoadRegisterFood(){
     alimentos.forEach( alimento => {
       options += ` <ion-select-option value="${alimento.id}">${alimento.nombre} (${alimento.porcion.charAt(alimento.porcion.length-1)})</ion-select-option>`
     });
+    document.querySelector("#dateRegisterFood").max = new Date().toISOString();
+    document.querySelector("#dateRegisterFood").value = new Date().toISOString();
     document.querySelector("#selectFood").innerHTML = options;
   } catch(error){
     document.querySelector("#registerFoodMessage").innerHTML = error.message;
@@ -310,12 +316,17 @@ function HandleGUIOnRegisterFood(responseData){
   document.querySelector("#txtFoodAmount").value = "";
 }
 
-// -------------------------------------------------------- Register food
+// -------------------------------------------------------- List Registered food
 async function HandleGUIOnLoadFoodRegisterList(){
   ValidateUserLogged();
+  document.querySelector("#datetime-end").value = new Date().toISOString();
+  document.querySelector("#datetime-end").max = new Date().toISOString();
+  document.querySelector("#datetime-start").value = new Date().toISOString();
+  document.querySelector("#datetime-start").max = new Date().toISOString();
   try{
+    setMealsRegistered(true);
     //DEvulve los registros para un usuario ordenados por fecha descendientemente
-    const registros = await getMealsRegistersAPI(JSON.parse(localStorage.getItem("loggedUser")));
+    const registros = JSON.parse(localStorage.getItem("foodRegistered"));
     //Usado para agrupar los elementos por cada fecha diferente
     const groupedRegisters = [];
     registros.forEach(registro => {
@@ -395,6 +406,7 @@ async function DeleteRegister(idRegisterFood){
     const response = await deleteMealRegisterAPI(requestObject);
     if(response.codigo == 200){
       ShowResultMessage("foodRegisterMsg","¡Se elimino el registro con exito!");
+      await setMealsRegistered(true)
     }
   }catch(error){
     ShowResultMessage("foodRegisterMsg","No se pudo eliminar el registo");
@@ -402,10 +414,23 @@ async function DeleteRegister(idRegisterFood){
     console.log(error);
   }
 }
+  function FilterFoodRegistersList(){
+
+  }
+
 // -------------------------------------------------------- Log out
 function LogOut(){
   CerrarMenu();
   LogOutAPI();
   HandleGUIMenuOnLogOut();
   document.querySelector("#ruteo").push("/Login");
+}
+
+
+async function setMealsRegistered(refresh=false){
+  if(refresh || localStorage.getItem("foodRegistered") == null || JSON.parse(localStorage.getItem("foodRegistered")).length == 0){
+    const registros = await getMealsRegistersAPI(JSON.parse(localStorage.getItem("loggedUser")));
+    localStorage.setItem("foodRegistered",JSON.stringify(registros))
+    console.log(localStorage.getItem("foodRegistered"));
+  }
 }
