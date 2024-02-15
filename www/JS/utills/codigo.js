@@ -341,7 +341,6 @@ function GetFoodDataFromGUI() {
     fecha: dateRegisterFood,
   };
 }
-
 async function RegisterFood() {
   try {
     const foodRegisterData = GetFoodDataFromGUI();
@@ -360,16 +359,19 @@ async function RegisterFood() {
   }
 }
 
-function HandleGUIOnRegisterFood(responseData) {
+async function HandleGUIOnRegisterFood(responseData) {
   document.querySelector("#registerFoodMessage").innerHTML =
     responseData.mensaje;
   document.querySelector("#selectFood").value = "0";
   document.querySelector("#txtFoodAmount").value = "";
+  await setMealsRegistered(true);
 }
 
 // -------------------------------------------------------- List Registered food
 async function HandleGUIOnLoadFoodRegisterList() {
   ValidateUserLogged();
+  console.log(getTodayCalories());
+  console.log(historyCalories());
   document.querySelector("#datetime-end").value = new Date().toISOString();
   document.querySelector("#datetime-end").max = new Date().toISOString();
   document.querySelector("#datetime-start").value = new Date().toISOString();
@@ -378,38 +380,8 @@ async function HandleGUIOnLoadFoodRegisterList() {
     setMealsRegistered(true);
     //DEvulve los registros para un usuario ordenados por fecha descendientemente
     const registros = JSON.parse(localStorage.getItem("foodRegistered"));
-    //Usado para agrupar los elementos por cada fecha diferente
-    const groupedRegisters = [];
-    registros.forEach((registro) => {
-      let alimento = JSON.parse(localStorage.getItem("alimentos")).find(
-        (alimento) => alimento.id == registro.idAlimento
-      );
-      registro.imageURL = `${baseURLImage}${alimento.imagen}.png`;
-      registro.nombreAlimento = alimento.nombre;
-      registro.unidadAlimento = alimento.porcion.charAt(
-        alimento.porcion.length - 1
-      );
-      registro.caloriasConsumidas =
-        (registro.cantidad * alimento.calorias) / parseInt(alimento.porcion);
-      //Buscar en la lista de agrupamientos con llave la fecha del registro. Devuleve undefined si no la encuentra
-      const objfinded = groupedRegisters.find((registers) =>
-        registers[registro.fecha]
-          ? registers[registro.fecha][0].fecha == registro.fecha
-          : undefined
-      );
-      //Si no hay grupos para la fecha del registro, crea uno uno nuevo
-      if (objfinded === undefined) {
-        const obj = {};
-        obj[registro.fecha] = [registro];
-        groupedRegisters.push(obj);
-      } else {
-        //Si ya haabia un grupo para esa fecha, agrega el registo a ese grupo
-        objfinded[registro.fecha].push(registro);
-      }
-    });
-    //Crear elementos segun registros
     let elementos = ``;
-    groupedRegisters.forEach((groupRegister) => {
+    registros.forEach((groupRegister) => {
       const llavesobj = Object.keys(groupRegister);
       elementos += `<ion-card color="light">
       <ion-card-header>
@@ -476,7 +448,8 @@ async function DeleteRegister(idRegisterFood) {
         "foodRegisterMsg",
         "¡Se elimino el registro con exito!"
       );
-      await setMealsRegistered(true);
+      await setMealsRegistered(true)
+      await HandleGUIOnLoadFoodRegisterList();
     }
   } catch (error) {
     ShowResultMessage("foodRegisterMsg", "No se pudo eliminar el registo");
@@ -497,38 +470,8 @@ function FilterFoodRegistersList() {
       if (dateStart <= registro.fecha && registro.fecha <= dateEnd)
         return registro;
     });
-    //Usado para agrupar los elementos por cada fecha diferente
-    const groupedRegisters = [];
-    registros.forEach((registro) => {
-      let alimento = JSON.parse(localStorage.getItem("alimentos")).find(
-        (alimento) => alimento.id == registro.idAlimento
-      );
-      registro.imageURL = `${baseURLImage}${alimento.imagen}.png`;
-      registro.nombreAlimento = alimento.nombre;
-      registro.unidadAlimento = alimento.porcion.charAt(
-        alimento.porcion.length - 1
-      );
-      registro.caloriasConsumidas =
-        (registro.cantidad * alimento.calorias) / parseInt(alimento.porcion);
-      //Buscar en la lista de agrupamientos con llave la fecha del registro. Devuleve undefined si no la encuentra
-      const objfinded = groupedRegisters.find((registers) =>
-        registers[registro.fecha]
-          ? registers[registro.fecha][0].fecha == registro.fecha
-          : undefined
-      );
-      //Si no hay grupos para la fecha del registro, crea uno uno nuevo
-      if (objfinded === undefined) {
-        const obj = {};
-        obj[registro.fecha] = [registro];
-        groupedRegisters.push(obj);
-      } else {
-        //Si ya haabia un grupo para esa fecha, agrega el registo a ese grupo
-        objfinded[registro.fecha].push(registro);
-      }
-    });
-    //Crear elementos segun registros
     let elementos = ``;
-    groupedRegisters.forEach((groupRegister) => {
+    registros.forEach((groupRegister) => {
       const llavesobj = Object.keys(groupRegister);
       elementos += `<ion-card color="light">
         <ion-card-header>
@@ -570,7 +513,62 @@ async function setMealsRegistered(refresh = false) {
     const registros = await getMealsRegistersAPI(
       JSON.parse(localStorage.getItem("loggedUser"))
     );
-    localStorage.setItem("foodRegistered", JSON.stringify(registros));
-    console.log(localStorage.getItem("foodRegistered"));
+
+    const groupedRegisters = [];
+    registros.forEach((registro) => {
+      let alimento = JSON.parse(localStorage.getItem("alimentos")).find(
+        (alimento) => alimento.id == registro.idAlimento
+      );
+      registro.imageURL = `${baseURLImage}${alimento.imagen}.png`;
+      registro.nombreAlimento = alimento.nombre;
+      registro.unidadAlimento = alimento.porcion.charAt(
+        alimento.porcion.length - 1
+      );
+      registro.caloriasConsumidas =
+        (registro.cantidad * alimento.calorias) / parseInt(alimento.porcion);
+      //Buscar en la lista de agrupamientos con llave la fecha del registro. Devuleve undefined si no la encuentra
+      const objfinded = groupedRegisters.find((registers) =>
+        registers[registro.fecha]
+          ? registers[registro.fecha][0].fecha == registro.fecha
+          : undefined
+      );
+      //Si no hay grupos para la fecha del registro, crea uno uno nuevo
+      if (objfinded === undefined) {
+        const obj = {};
+        obj[registro.fecha] = [registro];
+        groupedRegisters.push(obj);
+      } else {
+        //Si ya haabia un grupo para esa fecha, agrega el registo a ese grupo
+        objfinded[registro.fecha].push(registro);
+      }
+    });
+    localStorage.setItem("foodRegistered", JSON.stringify(groupedRegisters));
   }
+}
+
+
+function getTodayCalories(){
+  let registrosagrupados = JSON.parse(localStorage.getItem("foodRegistered"));
+  let calorias = 0;
+  registrosagrupados.forEach(registroagrupado => {
+    const llaveobj = Object.keys(registroagrupado)[0];
+    if(registroagrupado[llaveobj][0].fecha == new Date().toISOString().split("T")[0]){
+      registroagrupado[llaveobj].forEach(registro=> calorias+=registro.caloriasConsumidas)
+      return calorias;
+    }
+  })
+  return calorias;
+}
+
+function historyCalories(){
+  let registrosagrupados = JSON.parse(localStorage.getItem("foodRegistered"));
+  let calorias = 0;
+  registrosagrupados.forEach(registroagrupado => {
+    const llaveobj = Object.keys(registroagrupado)[0];
+    
+    registroagrupado[llaveobj].forEach(registro => {
+      calorias+=registro.caloriasConsumidas
+    })
+  })
+  return calorias;
 }
