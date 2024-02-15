@@ -81,7 +81,7 @@ function Navegar(event) {
       document.querySelector("#agregarRegistroAlimenticio").style.display = "block";
       break;
     default:
-      document.querySelector("#incio").style.display = "block";
+      document.querySelector("#inicio").style.display = "block";
       break;
   }
 }
