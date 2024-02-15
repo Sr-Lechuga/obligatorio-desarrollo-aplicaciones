@@ -24,3 +24,7 @@ ion-page #listadoRegistrosAlimenticios{
 .date-picker-header{
   text-align: center;
 }
+
+.button-container {
+    text-align: center;
+}
