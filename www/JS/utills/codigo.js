@@ -1,10 +1,9 @@
 let token = "";
 Inicializar();
 
-async function Inicializar() {
-  token = JSON.parse(localStorage.getItem("loggedUser"))
-    ? JSON.parse(localStorage.getItem("loggedUser")).apiKey
-    : "";
+async function Inicializar()
+{
+  token = JSON.parse(localStorage.getItem("loggedUser")) ? JSON.parse(localStorage.getItem("loggedUser")).apiKey : "";
   OcultarPantallas();
   AgregarEventos();
   if (token !== undefined && token.trim().length > 0) {
@@ -17,8 +16,7 @@ async function Inicializar() {
         JSON.stringify(
           await getFoodAPI(JSON.parse(localStorage.getItem("loggedUser")))
         )
-      );
-    }
+      )};
   } else {
     //Offline
     HandleGUIOnLoadRegister();
@@ -27,7 +25,7 @@ async function Inicializar() {
   }
 }
 
-function ShowResultMessage(id, message, duration = 2000) {
+function ShowResultMessage(id, message, duration = 2000){
   document.querySelector(`#${id}`).duration = duration;
   document.querySelector(`#${id}`).message = message;
   document.querySelector(`#${id}`).present();
@@ -43,16 +41,16 @@ function ValidateUserLogged() {
     JSON.parse(localStorage.getItem("loggedUser")).id == undefined
   ) {
     //Agregar modal que avise usuario no logueado
-    document.querySelector("#ruteo").push("/Login");
+  document.querySelector("#ruteo").push("/Login");
   }
 }
 
-function OcultarPantallas() {
-  let screens = document.querySelectorAll("ion-page");
-  screens.forEach((screen) => {
-    screen.style.display = "none";
-  });
-}
+  function OcultarPantallas() {
+    let screens = document.querySelectorAll("ion-page");
+    screens.forEach((screen) => {
+      screen.style.display = "none";
+    });
+  }
 
 function AgregarEventos() {
   document
@@ -101,6 +99,10 @@ function Navegar(event) {
       HandleGUIOnLoadRegisterFood();
       document.querySelector("#agregarRegistroAlimenticio").style.display =
         "block";
+      break;
+    case "/Mapa":
+      HandleGUIMapOnLoad();
+      document.querySelector("#mapa").style.display = "block";
       break;
     default:
       document.querySelector("#inicio").style.display = "block";
@@ -174,6 +176,7 @@ async function Login() {
     HandleGUIOnLogin();
     await setMealsRegistered(true);
     document.querySelector("#ruteo").push("/");
+    GetUserPerCountry(responseData);
   } catch (error) {
     document.querySelector("#mensajeLogin").innerHTML = error.message;
   }
@@ -302,7 +305,8 @@ function HandleGUIOnLoadRegisterFood() {
       new Date().toISOString();
     document.querySelector("#selectFood").innerHTML = options;
   } catch (error) {
-    document.querySelector("#registerFoodMessage").innerHTML = error.message;
+    document.querySelector("#foodRegisterMsg").message = error.message;
+    document.querySelector("#foodRegisterMsg").present()
   }
 }
 
@@ -355,13 +359,15 @@ async function RegisterFood() {
     //Es necesario pasar el parametro para poder visualizar el mensaje de exito
     HandleGUIOnRegisterFood(responseData);
   } catch (error) {
-    document.querySelector("#registerFoodMessage").innerHTML = error.message;
+    document.querySelector("#foodRegisterMsg").message = error.message;
+    document.querySelector("#foodRegisterMsg").present()
   }
 }
 
 async function HandleGUIOnRegisterFood(responseData) {
-  document.querySelector("#registerFoodMessage").innerHTML =
+  document.querySelector("#foodRegisterMsg").message =
     responseData.mensaje;
+    document.querySelector("#foodRegisterMsg").present()
   document.querySelector("#selectFood").value = "0";
   document.querySelector("#txtFoodAmount").value = "";
   await setMealsRegistered(true);
@@ -400,6 +406,27 @@ async function HandleGUIOnLoadFoodRegisterList() {
     });
     //Mostrar elementos
     document.querySelector("#showList").innerHTML = elementos;
+
+    let userData = JSON.parse(localStorage.getItem("loggedUser"));
+    let todayCalories = getTodayCalories();
+    let textColor = "green-text";
+
+    if(todayCalories > userData.caloriasDiarias){
+      textColor = "red-text";
+    }else if(todayCalories <= userData.caloriasDiarias && todayCalories >= userData.caloriasDiarias * .9){
+      textColor = "orange-text";
+    }
+
+    let Metrics = `
+      <ion-col class="center-text">
+        <p>Hoy</p>
+        <p class="enphasis-text-colored ${textColor}">${getTodayCalories()}</p>
+      </ion-col>
+      <ion-col class="center-text">
+        <p>Todo el tiempo</p>
+        <p class="enphasis-text">${historyCalories()}</p>
+      </ion-col>`;
+    document.querySelector("#Metrics").innerHTML = Metrics;
   } catch (error) {
     ShowResultMessage("foodRegisterMsg", "No se pudieron cargar los registros");
     console.log(error);
@@ -571,4 +598,29 @@ function historyCalories(){
     })
   })
   return calorias;
+}
+
+async function GetUserPerCountry(responseData){
+  const usercountryamount = await getCountriesPerUsersAPI(responseData)
+  let paises = await getCountriesAPI();
+  let validCountries = [];
+  usercountryamount.forEach(countryuseramount =>{
+    let validCountry = paises.find(pais => pais.name == countryuseramount.name)
+    if(validCountry != null || validCountry != undefined){
+      countryuseramount.latitud = validCountry.latitude
+      countryuseramount.longitud = validCountry.longitude
+      validCountries.push(countryuseramount)
+    }
+  })
+  localStorage.setItem("userPerCountry",JSON.stringify(validCountries))
+}
+
+function HandleGUIMapOnLoad(){
+  const countriesListElement = document.querySelector("#countriesList");
+  const availableCountries = JSON.parse(localStorage.getItem("userPerCountry"));
+  let countries = ``;
+  availableCountries.forEach(country => {
+    countries += `<p>Pais: ${country.name}, cantidad de usuarios: ${country.cantidadDeUsuarios}</p>`;
+  });
+  countriesListElement.innerHTML = countries;
 }

@@ -122,8 +122,8 @@ async function getCountriesAPI(){
   .catch(err=> {throw new Error(err)})
 }
 
-function getCountriesPerUsersAPI({apiKey,id}){
-  fetch(`${baseURL}/usuariosPorPais.php`,{
+async function getCountriesPerUsersAPI({apiKey,id}){
+  return fetch(`${baseURL}/usuariosPorPais.php`,{
     method:"GET",
     headers:{
     "Content-Type":"application/json",
@@ -141,10 +141,14 @@ function getCountriesPerUsersAPI({apiKey,id}){
     return response.json();
   })
   .then(data => {
-    console.log(data);
-    return data
+    return data.paises;
   })
-  .catch(err=> {throw new Error(err)})
+  .catch(error => {
+    throw new Error({
+      error:error.codigo == undefined ? 400 : error.codigo,
+      message: error.message 
+    })
+  });
 }
 
 // getMealsRegisters(loggedUserJSON);

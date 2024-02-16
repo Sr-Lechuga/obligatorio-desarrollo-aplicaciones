@@ -25,6 +25,39 @@ ion-page #listadoRegistrosAlimenticios{
   text-align: center;
 }
 
-.button-container {
+.center-text {
     text-align: center;
+}
+
+.enphasis-text-colored{
+  margin: 0 auto;
+  padding: 10px;
+  width: 50%;
+  font-weight: 600;
+  font-size: large;
+  color: white;
+  border-radius: 20px;
+}
+
+.enphasis-text{
+  margin: 0 auto;
+  padding: 10px;
+  width: 50%;
+  font-weight: 600;
+  font-size: large;
+  color: white;
+  background-color: grey;
+  border-radius: 20px;
+}
+
+.green-text{
+  background-color: green;
+}
+
+.orange-text{
+  background-color: orange;
+}
+
+.red-text{
+  background-color: brown;
 }

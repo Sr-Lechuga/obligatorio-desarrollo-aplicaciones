@@ -233,21 +233,15 @@
         <ion-content id="listado">
           <ion-grid fixed="true">
             <ion-row>
-              <ion-col class="date-picker-header"><h3>Inicio</h3></ion-col>
-            </ion-row>
-            <ion-row>
-              <ion-col>
+              <ion-col class="date-picker-header">
+                <p>Inicio</p>
                 <ion-datetime-button datetime="datetime-start"></ion-datetime-button>
                 <ion-modal>
                   <ion-datetime presentation="date" id="datetime-start"></ion-datetime>
                 </ion-modal>
               </ion-col>
-            </ion-row>
-            <ion-row>
-              <ion-col class="date-picker-header"><h3>Fin</h3></ion-col>
-            </ion-row>
-            <ion-row>
-              <ion-col>
+              <ion-col class="date-picker-header">
+                <p>Fin</p>
                 <ion-datetime-button datetime="datetime-end"></ion-datetime-button>
                 <ion-modal>
                   <ion-datetime presentation="date" id="datetime-end" ></ion-datetime>
@@ -255,9 +249,11 @@
               </ion-col>
             </ion-row>
             <ion-row>
-              <ion-col class="button-container">
+              <ion-col class="center-text">
                 <ion-button id="btnClearFilter">Limpiar Filtros</ion-button>
               </ion-col>
+            </ion-row>
+            <ion-row id="Metrics">
             </ion-row>
             <ion-row>
               <ion-col id="showList"></ion-col>
@@ -305,12 +301,39 @@
                 <ion-button expand="block" id="btnRegisterFood">Registrar alimento</ion-button>
               </ion-col>
             </ion-row>
-            <ion-row>
-              <ion-col class="center-content"><p id="registerFoodMessage"></p></ion-col>
-            </ion-row>
           </ion-grid>
         </ion-content>
-        <ion-loading id="foodRegisterMsg"></ion-loading>
+        <ion-loading id="foodRegisterMsg"  trigger="btnRegisterFood" message="¡Registrando alimento!" duration="2000"></ion-loading>
+      </ion-page>
+      <ion-page id="mapa" class="ion-page">
+        <ion-header>
+          <ion-toolbar>
+            <ion-buttons slot="start">
+              <ion-menu-button></ion-menu-button>
+            </ion-buttons>
+            <ion-title>Inicio</ion-title>
+          </ion-toolbar>
+        </ion-header>
+        <ion-content><ion-grid fixed="true">
+          <ion-row>
+            <ion-col>
+              <h1>Pais del usuario</h1>
+            </ion-col>
+            <ion-col>
+              <p id="userCountry"></p>
+            </ion-col>
+          </ion-row>
+          <ion-row>
+            <ion-col>
+              <h2>Usuarios por pais</h2>
+            </ion-col>
+          </ion-row>
+          <ion-row>
+            <ion-col id="countriesList">
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+        </ion-content>
       </ion-page>
     </ion-app>
   </body>
