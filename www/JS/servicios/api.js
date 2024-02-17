@@ -57,17 +57,17 @@ async function RegisterUserAPI({user,password,country,calories}){
   })
   .then(data => {
     if(data.codigo == 409){
-      return {
-        error: 409,
+      return Promise.reject({
+        code: 409,
         message: data.mensaje
-      };
+      });
     }
     else{
       return data;
     }
   }).catch( error => {
     return {
-      error: 400,
+      error: error.code == undefined ? 400 : error.code,
       message: error.message
     }
   });

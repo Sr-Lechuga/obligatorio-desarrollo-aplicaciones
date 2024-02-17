@@ -19,7 +19,7 @@ async function Inicializar()
       )};
   } else {
     //Offline
-    HandleGUIOnLoadRegister();
+    // HandleGUIOnLoadRegister();
     document.querySelector("#ruteo").push("/Login");
     HandleGUIMenuOnLogOut();
   }
@@ -87,6 +87,7 @@ function Navegar(event) {
       document.querySelector("#login").style.display = "block";
       break;
     case "/Registro":
+      HandleGUIOnLoadRegister();
       document.querySelector("#registerMessage").innerHTML = "";
       document.querySelector("#registro").style.display = "block";
       break;
@@ -217,7 +218,6 @@ function GetRegisterDataFromGUI() {
     "#txtRegisterCalories"
   ).value;
   const validPasswordRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*\W).{8,}$/;
-  console.log(country);
   //Validaciones
   if (email.trim().length == 0) {
     throw new Error("El email es obligatorio");
@@ -236,6 +236,9 @@ function GetRegisterDataFromGUI() {
   if (country.trim().length == 0) {
     throw new Error("El pais es obligatorio");
   }
+  if (country == 0) {
+    throw new Error("El pais seleccionado no es valido");
+  }
   if (caloriesDailyGoal.trim().length == 0) {
     throw new Error("La meta de calorias es obligatoria");
   }
@@ -252,11 +255,12 @@ function GetRegisterDataFromGUI() {
 }
 
 async function Register() {
-  try {
+  document.querySelector("#registerMessage").innerHTML = "";
+    try {
     const registerData = GetRegisterDataFromGUI();
     const responseData = await RegisterUserAPI(registerData);
     if (responseData.error !== undefined) {
-      throw new Error(`${data.message} (codigo de error: ${data.error})`);
+      throw new Error(`${responseData.message} (codigo de error: ${responseData.error})`);
     }
     HandleGUIOnRegister(responseData);
     localStorage.setItem("loggedUser", JSON.stringify(responseData));
@@ -269,13 +273,14 @@ async function Register() {
     }, 2000);
   } catch (error) {
     document.querySelector("#registerMessage").innerHTML = error.message;
+    ShowResultMessage("registerLoader",`${error.message} (codigo de error: ${error.error})`,3000);
   }
 }
 
 // Función para manejar la interfaz de usuario luego del registro
 function HandleGUIOnRegister() {
   CleanRegisterFields();
-  document.querySelector("#registerMessage").innerHTML = "Registro exitoso";
+  ShowResultMessage("registerLoader","¡Registo exitoso!");
   //Para auto log-in
   HandleGUIMenuOnLogin();
 }
@@ -284,7 +289,7 @@ function CleanRegisterFields() {
   document.querySelector("#txtRegisterEmail").value = "";
   document.querySelector("#txtRegisterPassword").value = "";
   document.querySelector("#txtRegisterCheckPassword").value = "";
-  document.querySelector("#txtRegisterCountry").value = "";
+  document.querySelector("#selectRegisterCountry").value = 0;
   document.querySelector("#txtRegisterCalories").value = "";
 }
 
@@ -420,11 +425,11 @@ async function HandleGUIOnLoadFoodRegisterList() {
     let Metrics = `
       <ion-col class="center-text">
         <p>Hoy</p>
-        <p class="enphasis-text-colored ${textColor}">${getTodayCalories()}</p>
+        <p class="enphasis-text-colored ${textColor}">${getTodayCalories().toFixed(2)}</p>
       </ion-col>
       <ion-col class="center-text">
         <p>Todo el tiempo</p>
-        <p class="enphasis-text">${historyCalories()}</p>
+        <p class="enphasis-text">${historyCalories().toFixed(2)}</p>
       </ion-col>`;
     document.querySelector("#Metrics").innerHTML = Metrics;
   } catch (error) {
