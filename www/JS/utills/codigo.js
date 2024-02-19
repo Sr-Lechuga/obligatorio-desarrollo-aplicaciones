@@ -449,7 +449,7 @@ function CreateRegisterFoodItem({
   return `
       <ion-item id="food-${id}">
         <ion-thumbnail slot="start">
-          <img alt="Silhouette of mountains" src="${imageURL}" />
+          <img alt="food-${nombreAlimento}" src="${imageURL}" />
         </ion-thumbnail>
         <ion-label>
           <h2>${nombreAlimento} (${unidadAlimento})</h2>
