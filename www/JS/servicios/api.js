@@ -264,7 +264,6 @@ async function getFoodAPI({apiKey,id}){
     return res.json()
   })
   .then(data=>{
-    console.log(data)
     return data.alimentos;
   })
   .catch(err=>{
