@@ -595,6 +595,9 @@ async function HandleGUIOnLoadUserAmountFilterMap(){
   const usersPerCountries = JSON.parse(localStorage.getItem("userPerCountry"));
   const availableCountries = JSON.parse(localStorage.getItem("paises"));
   let userFilter = parseInt(document.querySelector("#txtUserAmountFilterMap").value);
+  if(isNaN(userFilter)){
+    userFilter = 0;
+  }
   let markers = [];
 
   usersPerCountries.forEach((country) => {
