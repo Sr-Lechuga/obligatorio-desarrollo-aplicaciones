@@ -55,7 +55,7 @@ function AgregarEventos() {
   document.querySelector("#datetime-end").addEventListener("ionChange", FilterFoodRegistersList);
   document.querySelector("#datetime-start").addEventListener("ionChange", FilterFoodRegistersList);
   document.querySelector("#btnClearFilter").addEventListener("click", HandleGUIOnLoadFoodRegisterList);
-  
+  document.querySelector("#btnUserAmountFilterMap").addEventListener("click", HandleGUIOnLoadUserAmountFilterMap);
 }
 
 function CerrarMenu() {
@@ -587,6 +587,25 @@ async function HandleGUIMapOnLoad() {
       coords: [countryFinded.latitude, countryFinded.longitude],
     };
     markers.push(marker);
+  });
+  await loadMap(markers);
+}
+
+async function HandleGUIOnLoadUserAmountFilterMap(){
+  const usersPerCountries = JSON.parse(localStorage.getItem("userPerCountry"));
+  const availableCountries = JSON.parse(localStorage.getItem("paises"));
+  let userFilter = parseInt(document.querySelector("#txtUserAmountFilterMap").value);
+  let markers = [];
+
+  usersPerCountries.forEach((country) => {
+    const countryFinded = availableCountries.find((pais) => pais.id === country.id);
+    if(country.cantidadDeUsuarios>=userFilter){
+      const marker = {
+        message: `La cantidad de usuarios de ${country.name} es: ${country.cantidadDeUsuarios}`,
+        coords: [countryFinded.latitude, countryFinded.longitude],
+      };
+      markers.push(marker);
+    }
   });
   await loadMap(markers);
 }
