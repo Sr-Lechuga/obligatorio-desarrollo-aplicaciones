@@ -3,6 +3,11 @@
   font-weight: 500;
 }
 
+#registerMessage{
+  font-weight: 600;
+  color: brown;
+}
+
 .center-content{
   display: flex;
   justify-content: center;

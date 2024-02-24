@@ -1,43 +1,6 @@
-/*Un usuario registrado
-user: "jonattanlimo@gmail.com",
-  password: "Contrasenia123.",
-  country: 235,
-  calories: 3000
-  ->
-apiKey: "986dec9ae5bac5acbdeee77c8a18d2eb"
-caloriasDiarias: 3000
-codigo: 200
-id: 1596 
-*/
 const baseURLImage = "https://calcount.develotion.com/imgs/";
 const baseURL = "https://calcount.develotion.com/";
 const loggedUserJSON = JSON.parse(localStorage.getItem("loggedUser")) ? JSON.parse(localStorage.getItem("loggedUser")) : "";
-
-// const registerData = {
-//   user: "jonattanlimu@gmail.com",
-//   password: "Contrasenia123.",
-//   country: 235,
-//   calories: 3000
-// }
-
-// const loginData ={
-//   username: "jonattanlimo@gmail.com",
-//   password:"Contrasenia123."
-// }
-
-// const registerMealData ={
-//   apiKey:loggedUserJSON.apiKey,
-//   id: loggedUserJSON.id,
-//   idAlimento:8,
-//   cantidad:450,
-//   fecha:"2024-02-09"
-// }
-
-// const deleteRegisterMealData ={
-//   apiKey:loggedUserJSON.apiKey,
-//   id: loggedUserJSON.id,
-//   registerId: 803
-// }
 
 async function RegisterUserAPI({user,password,country,calories}){
   return fetch(`${baseURL}usuarios.php`,{
@@ -106,7 +69,6 @@ async function loginUserAPI({ email, password }) {
 function LogOutAPI(){
   localStorage.clear();
 }
-
 async function getCountriesAPI(){
   return fetch(`${baseURL}/paises.php`)
   .then(response => {
@@ -221,8 +183,8 @@ async function SetMealRegisterAPI({apiKey,id, idAlimento,cantidad,fecha}){
   });
 }
 
-async function deleteMealRegisterAPI({apiKey,id,registerId}){
-  return fetch(`${baseURL}/registros.php?idRegistro=${registerId}`,{
+async function deleteMealRegisterAPI({apiKey,id,mealRegisterId}){
+  return fetch(`${baseURL}/registros.php?idRegistro=${mealRegisterId}`,{
     method:"DELETE",
     headers:{
     "Content-Type":"application/json",

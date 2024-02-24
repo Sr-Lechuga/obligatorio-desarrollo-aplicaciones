@@ -3,6 +3,7 @@ let map;
 let userCoords;
 Inicializar();
 
+// -------------------------------------------------------- Inicializacion
 async function Inicializar() {
   navigator.geolocation.getCurrentPosition(SaveDeviceLocation, ShowError);
   token = JSON.parse(localStorage.getItem("loggedUser")) ? JSON.parse(localStorage.getItem("loggedUser")).apiKey : "";
@@ -17,34 +18,9 @@ async function Inicializar() {
     }
   } else {
     //Offline
-    // HandleGUIOnLoadRegister();
     document.querySelector("#ruteo").push("/Login");
     HandleGUIMenuOnLogOut();
   }
-}
-
-function ShowResultMessage(id, message, duration = 2000) {
-  document.querySelector(`#${id}`).duration = duration;
-  document.querySelector(`#${id}`).message = message;
-  document.querySelector(`#${id}`).present();
-}
-
-function ValidateUserLogged() {
-  if (localStorage.getItem("loggedUser") == null) {
-    //Agregar modal que avise usuario no logueado
-    document.querySelector("#ruteo").push("/Login");
-  }
-  if (JSON.parse(localStorage.getItem("loggedUser")).apiKey == undefined || JSON.parse(localStorage.getItem("loggedUser")).id == undefined) {
-    //Agregar modal que avise usuario no logueado
-    document.querySelector("#ruteo").push("/Login");
-  }
-}
-
-function OcultarPantallas() {
-  let screens = document.querySelectorAll("ion-page");
-  screens.forEach((screen) => {
-    screen.style.display = "none";
-  });
 }
 
 function AgregarEventos() {
@@ -58,9 +34,77 @@ function AgregarEventos() {
   document.querySelector("#btnUserAmountFilterMap").addEventListener("click", HandleGUIOnLoadUserAmountFilterMap);
 }
 
-function CerrarMenu() {
-  document.querySelector("#menu").close();
+function ValidateUserLogged() {
+  if (localStorage.getItem("loggedUser") == null) {
+    //Agregar modal que avise usuario no logueado
+    document.querySelector("#ruteo").push("/Login");
+  }
+  if (JSON.parse(localStorage.getItem("loggedUser")).apiKey == undefined || JSON.parse(localStorage.getItem("loggedUser")).id == undefined) {
+    //Agregar modal que avise usuario no logueado
+    document.querySelector("#ruteo").push("/Login");
+  }
 }
+
+// -------------------------------------------------------- Utils
+function ShowResultMessage(id, message, duration = 2000) {
+  document.querySelector(`#${id}`).duration = duration;
+  document.querySelector(`#${id}`).message = message;
+  document.querySelector(`#${id}`).present();
+}
+
+function OcultarPantallas() {
+  let screens = document.querySelectorAll("ion-page");
+  screens.forEach((screen) => {
+    screen.style.display = "none";
+  });
+}
+
+async function setMealsRegistered(refresh = false) {
+  if (refresh || localStorage.getItem("foodRegistered") == null || JSON.parse(localStorage.getItem("foodRegistered")).length == 0) {
+    const registros = await getMealsRegistersAPI(JSON.parse(localStorage.getItem("loggedUser")));
+
+    const groupedRegisters = [];
+    registros.forEach((registro) => {
+      let alimento = JSON.parse(localStorage.getItem("alimentos")).find((alimento) => alimento.id == registro.idAlimento);
+      registro.imageURL = `${baseURLImage}${alimento.imagen}.png`;
+      registro.nombreAlimento = alimento.nombre;
+      registro.unidadAlimento = alimento.porcion.charAt(alimento.porcion.length - 1);
+      registro.caloriasConsumidas = (registro.cantidad * alimento.calorias) / parseInt(alimento.porcion);
+      //Buscar en la lista de agrupamientos con llave la fecha del registro. Devuleve undefined si no la encuentra
+      const objfinded = groupedRegisters.find((registers) => (registers[registro.fecha] ? registers[registro.fecha][0].fecha == registro.fecha : undefined));
+      //Si no hay grupos para la fecha del registro, crea uno uno nuevo
+      if (objfinded === undefined) {
+        const obj = {};
+        obj[registro.fecha] = [registro];
+        groupedRegisters.push(obj);
+      } else {
+        //Si ya haabia un grupo para esa fecha, agrega el registo a ese grupo
+        objfinded[registro.fecha].push(registro);
+      }
+    });
+    localStorage.setItem("foodRegistered", JSON.stringify(groupedRegisters));
+  }
+}
+
+async function GetUserPerCountry(responseData) {
+  const usercountryamount = await getCountriesPerUsersAPI(responseData);
+  let paises = await getCountriesAPI();
+  let validCountries = [];
+  usercountryamount.forEach((countryuseramount) => {
+    let validCountry = paises.find((pais) => pais.name == countryuseramount.name);
+    if (validCountry != null || validCountry != undefined) {
+      countryuseramount.latitud = validCountry.latitude;
+      countryuseramount.longitud = validCountry.longitude;
+      validCountries.push(countryuseramount);
+    }
+  });
+  localStorage.setItem("userPerCountry", JSON.stringify(validCountries));
+}
+
+function SaveDeviceLocation(position) {
+  userCoords = [position.coords.latitude, position.coords.longitude];
+}
+// -------------------------------------------------------- Navigtaion
 
 function Navegar(event) {
   OcultarPantallas();
@@ -114,6 +158,9 @@ function HandleGUIMenuOnLogOut() {
   document.querySelector("ion-item[href='/Mapa']").style.display = "none";
 }
 
+function CerrarMenu() {
+  document.querySelector("#menu").close();
+}
 // -------------------------------------------------------- Login
 function GetLoginCredentialsFromGUI() {
   const email = document.querySelector("#txtLoginEmail").value;
@@ -143,17 +190,24 @@ async function Login() {
     if (responseData.error !== undefined) {
       throw new Error(`${responseData.message} (codigo de error: ${responseData.error})`);
     }
+
+    //API Initialization calls (con credenciales)
     localStorage.setItem("loggedUser", JSON.stringify(responseData));
     localStorage.setItem("alimentos", JSON.stringify(await getFoodAPI(responseData)));
+    //En el caso que el usuario entre por log in, se inicialice los paises (se busca reducir el llamado a la API)
     if (localStorage.getItem("paises") == null) {
       localStorage.setItem("paises", JSON.stringify(await getCountriesAPI()));
     }
-    HandleGUIOnLogin();
+    //Refresca la informacion de registros alimenticios del usuario
     await setMealsRegistered(true);
-    document.querySelector("#ruteo").push("/");
     GetUserPerCountry(responseData);
+
+    //Manejo del DOM
+    HandleGUIOnLogin();
+    document.querySelector("#ruteo").push("/");
   } catch (error) {
     document.querySelector("#mensajeLogin").innerHTML = error.message;
+    ShowResultMessage("loginMessageLoader", error.message);
   }
 }
 
@@ -171,6 +225,8 @@ async function HandleGUIOnLoadRegister() {
   try {
     const paises = await getCountriesAPI();
     localStorage.setItem("paises", JSON.stringify(paises));
+
+    //Carga del selector de paises
     let options = `<ion-select-option value="0">Seleccione un pais</ion-select-option>`;
     paises.forEach((pais) => {
       options += ` <ion-select-option value="${pais.id}">${pais.name}</ion-select-option>`;
@@ -227,18 +283,25 @@ async function Register() {
   try {
     const registerData = GetRegisterDataFromGUI();
     const responseData = await RegisterUserAPI(registerData);
+
     if (responseData.error !== undefined) {
       throw new Error(`${responseData.message} (codigo de error: ${responseData.error})`);
     }
-    HandleGUIOnRegister(responseData);
+
+    //Seteo de informacion global
     localStorage.setItem("loggedUser", JSON.stringify(responseData));
     localStorage.setItem("alimentos", JSON.stringify(await getFoodAPI(responseData)));
+
+    //Manejo del DOM
+    HandleGUIOnRegister(responseData);
+
+    //Redirecccion (Para auto-login)
     setTimeout(() => {
       document.querySelector("#ruteo").push("/");
     }, 2000);
   } catch (error) {
     document.querySelector("#registerMessage").innerHTML = error.message;
-    ShowResultMessage("registerLoader", `${error.message} (codigo de error: ${error.error})`, 3000);
+    ShowResultMessage("registerLoader", `${error.message} (codigo de error: ${error.error != undefined ? error.error : "form-input"})`);
   }
 }
 
@@ -246,7 +309,6 @@ async function Register() {
 function HandleGUIOnRegister() {
   CleanRegisterFields();
   ShowResultMessage("registerLoader", "¡Registo exitoso!");
-  //Para auto log-in
   HandleGUIMenuOnLogin();
 }
 
@@ -262,12 +324,17 @@ function CleanRegisterFields() {
 function HandleGUIOnLoadRegisterFood() {
   try {
     const alimentos = JSON.parse(localStorage.getItem("alimentos"));
+
     let options = `<ion-select-option value="0">Seleccione un alimento</ion-select-option>`;
     alimentos.forEach((alimento) => {
       options += ` <ion-select-option value="${alimento.id}">${alimento.nombre} (${alimento.porcion.charAt(alimento.porcion.length - 1)})</ion-select-option>`;
     });
-    document.querySelector("#dateRegisterFood").max = new Date().toISOString();
-    document.querySelector("#dateRegisterFood").value = new Date().toISOString();
+
+    //Fija la fecha de hoy como default y maxima
+    let maxDate = new Date(new Date().getTime() - 3 * 60 * 60 * 1000).toISOString();
+    document.querySelector("#dateRegisterFood").max = maxDate;
+    document.querySelector("#dateRegisterFood").value = maxDate;
+
     document.querySelector("#selectFood").innerHTML = options;
   } catch (error) {
     document.querySelector("#foodRegisterMsg").message = error.message;
@@ -295,7 +362,7 @@ function GetFoodDataFromGUI() {
     throw new Error("Las unidades debe ser igual");
   }
   // Se necesita concatenar la hora para que no devuelva la fecha del dia anterior
-  if (new Date(dateRegisterFood.concat("T00:00:00")) > new Date()) {
+  if (new Date(dateRegisterFood.concat("T00:00:00")) > new Date(new Date().getTime() - 3 * 60 * 60 * 1000)) {
     throw new Error("Seleccione una fecha valida");
   }
   //Retorno condicional con credenciales
@@ -307,6 +374,7 @@ function GetFoodDataFromGUI() {
     fecha: dateRegisterFood,
   };
 }
+
 async function RegisterFood() {
   try {
     const foodRegisterData = GetFoodDataFromGUI();
@@ -319,77 +387,104 @@ async function RegisterFood() {
     //Es necesario pasar el parametro para poder visualizar el mensaje de exito
     HandleGUIOnRegisterFood(responseData);
   } catch (error) {
-    document.querySelector("#foodRegisterMsg").message = error.message;
-    document.querySelector("#foodRegisterMsg").present();
+    ShowResultMessage("foodRegisterMsg", error.message);
   }
 }
 
 async function HandleGUIOnRegisterFood(responseData) {
-  document.querySelector("#foodRegisterMsg").message = responseData.mensaje;
-  document.querySelector("#foodRegisterMsg").present();
+  ShowResultMessage("foodRegisterMsg", responseData.mensaje);
+
   document.querySelector("#selectFood").value = "0";
   document.querySelector("#txtFoodAmount").value = "";
+
+  //Luego del registro de un alimento es necesario refrescar los registros locales globales
   await setMealsRegistered(true);
 }
 
 // -------------------------------------------------------- List Registered food
+
+function getTodayCalories() {
+  let registrosagrupados = JSON.parse(localStorage.getItem("foodRegistered"));
+  let calorias = 0;
+  registrosagrupados.forEach((registroagrupado) => {
+    const llaveobj = Object.keys(registroagrupado)[0];
+    if (registroagrupado[llaveobj][0].fecha == new Date(new Date().getTime() - 3 * 60 * 60 * 1000).toISOString().split("T")[0]) {
+      registroagrupado[llaveobj].forEach((registro) => (calorias += registro.caloriasConsumidas));
+      return calorias;
+    }
+  });
+  return calorias;
+}
+
+function getHistoryCalories() {
+  let registrosagrupados = JSON.parse(localStorage.getItem("foodRegistered"));
+  let calorias = 0;
+  registrosagrupados.forEach((registroagrupado) => {
+    const llaveobj = Object.keys(registroagrupado)[0];
+
+    registroagrupado[llaveobj].forEach((registro) => {
+      calorias += registro.caloriasConsumidas;
+    });
+  });
+  return calorias;
+}
+
 async function HandleGUIOnLoadFoodRegisterList() {
   ValidateUserLogged();
   // console.log(getTodayCalories());
   // console.log(historyCalories());
-  document.querySelector("#datetime-end").value = new Date().toISOString();
-  document.querySelector("#datetime-end").max = new Date().toISOString();
-  document.querySelector("#datetime-start").value = new Date().toISOString();
-  document.querySelector("#datetime-start").max = new Date().toISOString();
+  let date = new Date(new Date().getTime() - 3 * 60 * 60 * 1000).toISOString();
+  document.querySelector("#datetime-end").value = date;
+  document.querySelector("#datetime-end").max = date;
+  document.querySelector("#datetime-start").value = date;
+  document.querySelector("#datetime-start").max = date;
   try {
+    //Refrsca los registros de laimentos antes de renderizarlos
     setMealsRegistered(true);
-    //DEvulve los registros para un usuario ordenados por fecha descendientemente
+
+    //Devulve los registros para un usuario ordenados por fecha descendientemente
     const registros = JSON.parse(localStorage.getItem("foodRegistered"));
-    let elementos = ``;
-    registros.forEach((groupRegister) => {
-      const llavesobj = Object.keys(groupRegister);
-      elementos += `<ion-card color="light">
-      <ion-card-header>
-        <ion-card-title>Alimentos</ion-card-title>
-        <ion-card-subtitle>${llavesobj[0]}</ion-card-subtitle>
-      </ion-card-header>
-      <ion-card-content>
-        <ion-list>`;
-      groupRegister[llavesobj[0]].forEach((registro) => {
-        let templatecard = CreateRegisterFoodItem(registro);
-        elementos += templatecard;
-      });
-      elementos += `</ion-list>
-        </ion-card-content>
-      </ion-card>`;
-    });
-    //Mostrar elementos
-    document.querySelector("#showList").innerHTML = elementos;
+    CreateGroupingCards(registros);
 
-    let userData = JSON.parse(localStorage.getItem("loggedUser"));
     let todayCalories = getTodayCalories();
-    let textColor = "green-text";
+    let historyCalories = getHistoryCalories();
 
+    let textColor = "green-text";
+    let userData = JSON.parse(localStorage.getItem("loggedUser"));
     if (todayCalories > userData.caloriasDiarias) {
       textColor = "red-text";
     } else if (todayCalories <= userData.caloriasDiarias && todayCalories >= userData.caloriasDiarias * 0.9) {
       textColor = "orange-text";
     }
 
-    let Metrics = `
-      <ion-col class="center-text">
-        <p>Hoy</p>
-        <p class="enphasis-text-colored ${textColor}">${getTodayCalories().toFixed(2)}</p>
-      </ion-col>
-      <ion-col class="center-text">
-        <p>Todo el tiempo</p>
-        <p class="enphasis-text">${historyCalories().toFixed(2)}</p>
-      </ion-col>`;
-    document.querySelector("#Metrics").innerHTML = Metrics;
+    CreateMetricsItems(textColor, todayCalories, historyCalories);
   } catch (error) {
     ShowResultMessage("foodRegisterMsg", "No se pudieron cargar los registros");
     console.log(error);
   }
+}
+
+function CreateGroupingCards(registros) {
+  let elementos = ``;
+  registros.forEach((groupRegister) => {
+    const llavesobj = Object.keys(groupRegister);
+    elementos += `<ion-card color="light">
+    <ion-card-header>
+      <ion-card-title>Alimentos</ion-card-title>
+      <ion-card-subtitle>${llavesobj[0]}</ion-card-subtitle>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-list>`;
+    groupRegister[llavesobj[0]].forEach((registro) => {
+      let templatecard = CreateRegisterFoodItem(registro);
+      elementos += templatecard;
+    });
+    elementos += `</ion-list>
+      </ion-card-content>
+    </ion-card>`;
+  });
+  //Mostrar elementos
+  document.querySelector("#showList").innerHTML = elementos;
 }
 
 function CreateRegisterFoodItem({ nombreAlimento, unidadAlimento, imageURL, cantidad, id, caloriasConsumidas }) {
@@ -408,20 +503,30 @@ function CreateRegisterFoodItem({ nombreAlimento, unidadAlimento, imageURL, cant
     `;
 }
 
-// -------------------------------------------------------- Register food
-
-function HideFoodRegisterOnClick(idRegisterFood) {
-  ShowResultMessage("foodRegisterMsg", "Eliminando...");
-  document.querySelector(`#food-${idRegisterFood}`).style.display = "none";
+function CreateMetricsItems(textColor, todayCalories, historyCalories) {
+  let Metrics = `
+      <ion-col class="center-text">
+        <p>Hoy</p>
+        <p class="enphasis-text-colored ${textColor}">${todayCalories.toFixed(2)}</p>
+      </ion-col>
+      <ion-col class="center-text">
+        <p>Todo el tiempo</p>
+        <p class="enphasis-text">${historyCalories.toFixed(2)}</p>
+      </ion-col>`;
+  document.querySelector("#Metrics").innerHTML = Metrics;
 }
 
 async function DeleteRegister(idRegisterFood) {
   ValidateUserLogged();
+
   let requestObject = JSON.parse(localStorage.getItem("loggedUser"));
-  requestObject.registerId = idRegisterFood;
+  //Add to reques
+  requestObject.mealRegisterId = idRegisterFood;
+
   try {
     HideFoodRegisterOnClick(idRegisterFood);
     const response = await deleteMealRegisterAPI(requestObject);
+
     if (response.codigo == 200) {
       ShowResultMessage("foodRegisterMsg", "¡Se elimino el registro con exito!");
       await setMealsRegistered(true);
@@ -432,6 +537,10 @@ async function DeleteRegister(idRegisterFood) {
     document.querySelector(`#food-${idRegisterFood}`).style.display = "block";
     console.log(error);
   }
+}
+function HideFoodRegisterOnClick(idRegisterFood) {
+  ShowResultMessage("foodRegisterMsg", "Eliminando...");
+  document.querySelector(`#food-${idRegisterFood}`).style.display = "none";
 }
 function FilterFoodRegistersList() {
   try {
@@ -467,90 +576,34 @@ function FilterFoodRegistersList() {
   }
 }
 
-// -------------------------------------------------------- Log out
-function LogOut() {
-  CerrarMenu();
-  LogOutAPI();
-  HandleGUIMenuOnLogOut();
-  document.querySelector("#ruteo").push("/Login");
-}
-
-async function setMealsRegistered(refresh = false) {
-  if (refresh || localStorage.getItem("foodRegistered") == null || JSON.parse(localStorage.getItem("foodRegistered")).length == 0) {
-    const registros = await getMealsRegistersAPI(JSON.parse(localStorage.getItem("loggedUser")));
-
-    const groupedRegisters = [];
-    registros.forEach((registro) => {
-      let alimento = JSON.parse(localStorage.getItem("alimentos")).find((alimento) => alimento.id == registro.idAlimento);
-      registro.imageURL = `${baseURLImage}${alimento.imagen}.png`;
-      registro.nombreAlimento = alimento.nombre;
-      registro.unidadAlimento = alimento.porcion.charAt(alimento.porcion.length - 1);
-      registro.caloriasConsumidas = (registro.cantidad * alimento.calorias) / parseInt(alimento.porcion);
-      //Buscar en la lista de agrupamientos con llave la fecha del registro. Devuleve undefined si no la encuentra
-      const objfinded = groupedRegisters.find((registers) => (registers[registro.fecha] ? registers[registro.fecha][0].fecha == registro.fecha : undefined));
-      //Si no hay grupos para la fecha del registro, crea uno uno nuevo
-      if (objfinded === undefined) {
-        const obj = {};
-        obj[registro.fecha] = [registro];
-        groupedRegisters.push(obj);
-      } else {
-        //Si ya haabia un grupo para esa fecha, agrega el registo a ese grupo
-        objfinded[registro.fecha].push(registro);
-      }
-    });
-    localStorage.setItem("foodRegistered", JSON.stringify(groupedRegisters));
-  }
-}
-
-function getTodayCalories() {
-  let registrosagrupados = JSON.parse(localStorage.getItem("foodRegistered"));
-  let calorias = 0;
-  registrosagrupados.forEach((registroagrupado) => {
-    const llaveobj = Object.keys(registroagrupado)[0];
-    if (registroagrupado[llaveobj][0].fecha == new Date().toISOString().split("T")[0]) {
-      registroagrupado[llaveobj].forEach((registro) => (calorias += registro.caloriasConsumidas));
-      return calorias;
-    }
-  });
-  return calorias;
-}
-
-function historyCalories() {
-  let registrosagrupados = JSON.parse(localStorage.getItem("foodRegistered"));
-  let calorias = 0;
-  registrosagrupados.forEach((registroagrupado) => {
-    const llaveobj = Object.keys(registroagrupado)[0];
-
-    registroagrupado[llaveobj].forEach((registro) => {
-      calorias += registro.caloriasConsumidas;
-    });
-  });
-  return calorias;
-}
-
-async function GetUserPerCountry(responseData) {
-  const usercountryamount = await getCountriesPerUsersAPI(responseData);
-  let paises = await getCountriesAPI();
-  let validCountries = [];
-  usercountryamount.forEach((countryuseramount) => {
-    let validCountry = paises.find((pais) => pais.name == countryuseramount.name);
-    if (validCountry != null || validCountry != undefined) {
-      countryuseramount.latitud = validCountry.latitude;
-      countryuseramount.longitud = validCountry.longitude;
-      validCountries.push(countryuseramount);
-    }
-  });
-  localStorage.setItem("userPerCountry", JSON.stringify(validCountries));
-}
-
-function SaveDeviceLocation(position) {
-  userCoords = [position.coords.latitude, position.coords.longitude];
-}
-
 function ShowError(error) {
   console.log(error.message);
   //Set ORT coord by default
   userCoords = [-34.90328160612759, -56.19087993236588];
+}
+
+// -------------------------------------------------------- Map
+
+async function HandleGUIMapOnLoad() {
+  let markers = getMapMarkers();
+  await loadMap(markers);
+}
+
+function getMapMarkers() {
+  const usersPerCountries = JSON.parse(localStorage.getItem("userPerCountry"));
+  const availableCountries = JSON.parse(localStorage.getItem("paises"));
+  let markers = [];
+
+  usersPerCountries.forEach((country) => {
+    const countryFinded = availableCountries.find((pais) => pais.id === country.id);
+    const marker = {
+      message: `La cantidad de usuarios de ${country.name} es: ${country.cantidadDeUsuarios}`,
+      coords: [countryFinded.latitude, countryFinded.longitude],
+      userAmount: country.cantidadDeUsuarios,
+    };
+    markers.push(marker);
+  });
+  return markers;
 }
 
 async function loadMap(markers) {
@@ -561,12 +614,12 @@ async function loadMap(markers) {
   // navigator.geolocation.getCurrentPosition(SaveDeviceLocation, ShowError);
   setTimeout(() => {
     map = L.map("map");
-    
+
     L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
       maxZoom: 19,
       attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
     }).addTo(map);
-    
+
     markers.forEach((marker) => {
       L.marker(marker.coords).addTo(map).bindPopup(marker.message).openPopup();
     });
@@ -575,40 +628,20 @@ async function loadMap(markers) {
   }, 1000);
 }
 
-async function HandleGUIMapOnLoad() {
-  const usersPerCountries = JSON.parse(localStorage.getItem("userPerCountry"));
-  const availableCountries = JSON.parse(localStorage.getItem("paises"));
-  let markers = [];
-
-  usersPerCountries.forEach((country) => {
-    const countryFinded = availableCountries.find((pais) => pais.id === country.id);
-    const marker = {
-      message: `La cantidad de usuarios de ${country.name} es: ${country.cantidadDeUsuarios}`,
-      coords: [countryFinded.latitude, countryFinded.longitude],
-    };
-    markers.push(marker);
-  });
+async function HandleGUIOnLoadUserAmountFilterMap() {
+  let userFilter = parseInt(document.querySelector("#txtUserAmountFilterMap").value);
+  if (isNaN(userFilter)) {
+    userFilter = 0;
+  }
+  let oldmarkers = getMapMarkers();
+  let markers = oldmarkers.filter((marker) => marker.userAmount >= userFilter);
   await loadMap(markers);
 }
 
-async function HandleGUIOnLoadUserAmountFilterMap(){
-  const usersPerCountries = JSON.parse(localStorage.getItem("userPerCountry"));
-  const availableCountries = JSON.parse(localStorage.getItem("paises"));
-  let userFilter = parseInt(document.querySelector("#txtUserAmountFilterMap").value);
-  if(isNaN(userFilter)){
-    userFilter = 0;
-  }
-  let markers = [];
-
-  usersPerCountries.forEach((country) => {
-    const countryFinded = availableCountries.find((pais) => pais.id === country.id);
-    if(country.cantidadDeUsuarios>=userFilter){
-      const marker = {
-        message: `La cantidad de usuarios de ${country.name} es: ${country.cantidadDeUsuarios}`,
-        coords: [countryFinded.latitude, countryFinded.longitude],
-      };
-      markers.push(marker);
-    }
-  });
-  await loadMap(markers);
+// -------------------------------------------------------- Log out
+function LogOut() {
+  CerrarMenu();
+  LogOutAPI();
+  HandleGUIMenuOnLogOut();
+  document.querySelector("#ruteo").push("/Login");
 }

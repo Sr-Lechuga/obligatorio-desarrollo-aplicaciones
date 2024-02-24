@@ -155,7 +155,7 @@
               </ion-col>
             </ion-row>
           </ion-grid>
-          <ion-loading trigger="btnLogin" message="Ingresando..." duration="2000"></ion-loading>
+          <ion-loading id="loginMessageLoader" trigger="btnLogin" message="Ingresando..." duration="2000"></ion-loading>
         </ion-content>
       </ion-page>
       <ion-page id="registro" class="ion-page">
@@ -220,7 +220,7 @@
             </ion-row>
             <ion-row>
               <ion-col>
-                <p id="registerMessage"></p>
+                <p class="center-content" id="registerMessage"></p>
               </ion-col>
             </ion-row>
           </ion-grid>
