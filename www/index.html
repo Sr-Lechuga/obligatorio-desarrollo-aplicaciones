@@ -317,11 +317,29 @@
             <ion-buttons slot="start">
               <ion-menu-button></ion-menu-button>
             </ion-buttons>
-            <ion-title>Inicio</ion-title>
+            <ion-title>Mapa</ion-title>
           </ion-toolbar>
         </ion-header>
         <ion-content>
-          <div id="map">
+          <ion-grid>
+            <ion-row >
+              <ion-col class="center-content">
+                <ion-input
+                type="number"
+                label="Filtro cantidad usuarios"
+                id="txtUserAmountFilterMap"
+                >
+              </ion-col>
+              <ion-col class="center-content">
+                <ion-button id="btnUserAmountFilterMap">Filtrar</ion-button>
+              </ion-col>
+            </ion-row>
+            <ion-row>
+              <ion-col>
+                <div id="map">
+              </ion-col>
+            </ion-row>
+          </ion-grid>
         </ion-content>
       </ion-page>
     </ion-app>

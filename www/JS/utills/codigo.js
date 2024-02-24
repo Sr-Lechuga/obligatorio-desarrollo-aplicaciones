@@ -1,7 +1,10 @@
 let token = "";
+let map;
+let userCoords;
 Inicializar();
 
 async function Inicializar() {
+  navigator.geolocation.getCurrentPosition(SaveDeviceLocation, ShowError);
   token = JSON.parse(localStorage.getItem("loggedUser")) ? JSON.parse(localStorage.getItem("loggedUser")).apiKey : "";
   OcultarPantallas();
   AgregarEventos();
@@ -11,7 +14,6 @@ async function Inicializar() {
     HandleGUIMenuOnLogin();
     if (localStorage.getItem("alimentos") === undefined) {
       localStorage.setItem("alimentos", JSON.stringify(await getFoodAPI(JSON.parse(localStorage.getItem("loggedUser")))));
-      
     }
   } else {
     //Offline
@@ -53,6 +55,7 @@ function AgregarEventos() {
   document.querySelector("#datetime-end").addEventListener("ionChange", FilterFoodRegistersList);
   document.querySelector("#datetime-start").addEventListener("ionChange", FilterFoodRegistersList);
   document.querySelector("#btnClearFilter").addEventListener("click", HandleGUIOnLoadFoodRegisterList);
+  
 }
 
 function CerrarMenu() {
@@ -142,8 +145,8 @@ async function Login() {
     }
     localStorage.setItem("loggedUser", JSON.stringify(responseData));
     localStorage.setItem("alimentos", JSON.stringify(await getFoodAPI(responseData)));
-    if(localStorage.getItem("paises")==null){
-      localStorage.setItem("paises",JSON.stringify(await getCountriesAPI()))
+    if (localStorage.getItem("paises") == null) {
+      localStorage.setItem("paises", JSON.stringify(await getCountriesAPI()));
     }
     HandleGUIOnLogin();
     await setMealsRegistered(true);
@@ -167,7 +170,7 @@ function HandleGUIOnLogin() {
 async function HandleGUIOnLoadRegister() {
   try {
     const paises = await getCountriesAPI();
-    localStorage.setItem("paises",JSON.stringify(paises))
+    localStorage.setItem("paises", JSON.stringify(paises));
     let options = `<ion-select-option value="0">Seleccione un pais</ion-select-option>`;
     paises.forEach((pais) => {
       options += ` <ion-select-option value="${pais.id}">${pais.name}</ion-select-option>`;
@@ -539,26 +542,51 @@ async function GetUserPerCountry(responseData) {
   });
   localStorage.setItem("userPerCountry", JSON.stringify(validCountries));
 }
-var map = L.map('map').fitWorld();
 
-function HandleGUIMapOnLoad() {
+function SaveDeviceLocation(position) {
+  userCoords = [position.coords.latitude, position.coords.longitude];
+}
+
+function ShowError(error) {
+  console.log(error.message);
+  //Set ORT coord by default
+  userCoords = [-34.90328160612759, -56.19087993236588];
+}
+
+async function loadMap(markers) {
+  if (map != null) {
+    map.remove();
+  }
+
+  // navigator.geolocation.getCurrentPosition(SaveDeviceLocation, ShowError);
+  setTimeout(() => {
+    map = L.map("map");
+    
+    L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 19,
+      attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+    }).addTo(map);
+    
+    markers.forEach((marker) => {
+      L.marker(marker.coords).addTo(map).bindPopup(marker.message).openPopup();
+    });
+    L.marker(userCoords).addTo(map).bindPopup("Tú estas aquí").openPopup();
+    map.setView(userCoords, 13);
+  }, 1000);
+}
+
+async function HandleGUIMapOnLoad() {
   const usersPerCountries = JSON.parse(localStorage.getItem("userPerCountry"));
   const availableCountries = JSON.parse(localStorage.getItem("paises"));
   let markers = [];
-   usersPerCountries.forEach((country) => {
-    const countryFinded = availableCountries.find(pais=> pais.id===country.id)
+
+  usersPerCountries.forEach((country) => {
+    const countryFinded = availableCountries.find((pais) => pais.id === country.id);
     const marker = {
-      message : `La cantidad de usuarios de ${country.name} es: ${country.cantidadDeUsuarios}`,
-      coords:[countryFinded.latitude,countryFinded.longitude]
-    }
-    markers.push(marker)
-   });
-  L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    maxZoom: 19,
-    attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-  }).addTo(map);
-  markers.forEach(marker =>{
-    let currentMarker = L.marker(marker.coords).addTo(map);
-    currentMarker.bindPopup(marker.message).openPopup();
+      message: `La cantidad de usuarios de ${country.name} es: ${country.cantidadDeUsuarios}`,
+      coords: [countryFinded.latitude, countryFinded.longitude],
+    };
+    markers.push(marker);
   });
+  await loadMap(markers);
 }
